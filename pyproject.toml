@@ -1,0 +1,28 @@
+[project]
+name = "uruguay_dua_comex"
+version = "0.1.0"
+description = "Análisis de datos de la Dirección Nacional de Aduanas (DUA) para comercio exterior en Uruguay"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [
+    {name = "Fernanda Aguirre Ruiz"}
+]
+
+dependencies = [
+    "ipykernel",
+    "nbformat",
+    "pandas",
+    "polars",
+    "numpy",
+    "requests",
+    "plotnine",
+    "openpyxl",
+    "pyprojroot",
+]
+
+[build-system]
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false
