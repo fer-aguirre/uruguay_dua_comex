@@ -50,6 +50,8 @@ La tabla final (`dua_2016-2026_decoded.parquet`) se descarga sola la primera vez
 
 Si en cambio querés armar la tabla por tu cuenta desde cero (por ejemplo, para actualizarla con meses más recientes), hace falta primero descargar los archivos crudos que publica la DNA (uno por mes, formato `dmYYYYMM.zip`) y guardarlos en `data/raw/<año>/`; estos archivos están disponibles públicamente en [aduanas.gub.uy](https://www.aduanas.gub.uy) en cumplimiento de la Ley 19.438, art. 43. Después corré los notebooks `0.1` y `0.2` en orden (ver [El pipeline de datos](#el-pipeline-de-datos)).
 
+> **A tener en cuenta:** la descarga automática busca siempre un archivo con el mismo nombre fijo (`dua_2016-2026_decoded.parquet`), aunque el dataset se actualice más adelante con años nuevos. Si volvés a generarlo con un rango distinto, hay que volver a subirlo al release con ese mismo nombre. Y quien ya lo haya descargado antes no va a recibir la versión nueva automáticamente, porque el archivo local ya existe.
+
 ---
 
 ## El pipeline de datos
