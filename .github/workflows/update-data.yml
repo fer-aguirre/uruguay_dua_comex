@@ -1,0 +1,74 @@
+# Actualiza el dataset de DUAs con los meses nuevos o modificados en el FTP de la DNA.
+#
+# La DNA cierra el archivo de cada mes el último día del mes o el 1 del mes
+# siguiente, así que se revisa del 1 al 7 de cada mes. Si algún mes cerrado es
+# nuevo o cambió en el servidor, se procesan solo esos meses (ver
+# uruguay_dua_comex/update.py), se publica un release nuevo (borrando el
+# anterior) y se commitea data/manifest.json. Si no cambió nada, termina en un
+# par de minutos sin publicar nada.
+name: Actualizar datos
+
+on:
+  schedule:
+    # 09:14 hora de Uruguay (UTC-3, sin horario de verano) = 12:14 UTC,
+    # días 1 a 7 de cada mes. Fuera de la hora en punto, cuando GitHub demora
+    # más los workflows programados.
+    - cron: "14 12 1-7 * *"
+  # Permite correrlo a mano desde la pestaña Actions.
+  workflow_dispatch:
+
+permissions:
+  # Necesario para crear releases y pushear el manifest.
+  contents: write
+
+# Nunca dos actualizaciones a la vez: la segunda espera a que termine la primera.
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Instalar dependencias
+        run: uv sync --frozen --no-dev
+
+      - name: Procesar meses nuevos o modificados
+        id: update
+        run: uv run python -m uruguay_dua_comex.update
+
+      - name: Publicar release
+        if: steps.update.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROCESSED_MONTHS: ${{ steps.update.outputs.processed_months }}
+          LAST_MONTH: ${{ steps.update.outputs.last_month }}
+        run: |
+          tag="v$(TZ=America/Montevideo date +%Y.%m.%d)"
+          gh release create "$tag" \
+            data/processed/dua_decoded.parquet \
+            data/processed/dua_anulados.parquet \
+            data/processed/dua_historial.parquet \
+            --title "$tag" \
+            --notes "Dataset de DUAs decodificado, de 2016-01 a ${LAST_MONTH} (solo meses cerrados). Meses procesados en esta actualización: ${PROCESSED_MONTHS}. Incluye la tabla final (dua_decoded.parquet), la lista de anulados (dua_anulados.parquet) y el historial de todas las versiones de cada declaración (dua_historial.parquet)."
+          # Se conserva solo el release más reciente.
+          gh release list --json tagName --jq '.[].tagName' | grep -vxF "$tag" |
+            while read -r old_tag; do
+              gh release delete "$old_tag" --yes --cleanup-tag
+            done
+
+      - name: Commitear manifest
+        if: steps.update.outputs.updated == 'true'
+        env:
+          LAST_MONTH: ${{ steps.update.outputs.last_month }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/manifest.json
+          git commit -m "Actualizar datos hasta ${LAST_MONTH}"
+          git push

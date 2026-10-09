@@ -27,16 +27,12 @@ from uruguay_dua_comex import utils
 
 logger = logging.getLogger(__name__)
 
-# Matches only 0.2-decode-data.ipynb's output, e.g. dua_2016-2026_decoded.parquet.
-DECODED_PATTERN = re.compile(r"^dua_\d{4}-\d{4}_decoded\.parquet$")
-
 # Nombre fijo del archivo tal como se sube a cada GitHub release: la URL de
-# "latest" necesita un nombre de archivo conocido de antemano, así que el
-# release siempre publica el dataset decodificado con este mismo nombre,
-# aunque el rango de años real vaya creciendo con el tiempo.
-DECODED_FILENAME = "dua_2016-2026_decoded.parquet"
+# "latest" necesita un nombre de archivo conocido de antemano, así que no
+# incluye el rango de fechas, que crece con cada actualización.
+DECODED_FILENAME = "dua_decoded.parquet"
 RELEASE_DOWNLOAD_URL = (
-    "https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest/download/" + DECODED_FILENAME
+    "https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest/download/"
 )
 
 # Códigos cortos aceptados para tipo_regimen, mapeados al valor decodificado
@@ -71,62 +67,54 @@ def _normalize_ncm(code: str) -> str:
     return NCM_NON_DIGIT_PATTERN.sub("", code)
 
 
-def _download_decoded_data(destination: Path) -> None:
-    """Download the pre-built decoded dataset from the latest GitHub release.
+def download_release_asset(filename: str) -> Path:
+    """Download a file from the latest GitHub release into data/processed/.
 
     Downloads to a temporary file first and renames it into place only once
     complete, so an interrupted download never leaves a truncated file that
-    looks like a valid cached dataset on the next run.
+    looks like a valid cached file on the next run.
 
     Args:
-        destination: Local path to save the downloaded parquet to.
+        filename: Name of the file in the release (e.g. DECODED_FILENAME).
+
+    Returns:
+        Path to the downloaded file.
     """
-    logger.info("Dataset no encontrado localmente. Descargando desde %s...", RELEASE_DOWNLOAD_URL)
+    url = RELEASE_DOWNLOAD_URL + filename
+    destination = utils.data_processed_dir(filename)
+    logger.info("%s no encontrado localmente. Descargando desde %s...", filename, url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = destination.with_name(destination.name + ".tmp")
 
-    response = requests.get(RELEASE_DOWNLOAD_URL, stream=True, timeout=30)
+    response = requests.get(url, stream=True, timeout=30)
     response.raise_for_status()
     total = int(response.headers.get("content-length", 0))
     with (
-        open(tmp_path, "wb") as file_,
-        tqdm(total=total, unit="B", unit_scale=True, desc="Descargando dataset") as progress,
+        tmp_path.open("wb") as file_,
+        tqdm(
+            total=total, unit="B", unit_scale=True, desc=f"Descargando {filename}"
+        ) as progress,
     ):
         for chunk in response.iter_content(chunk_size=1024 * 1024):
             file_.write(chunk)
             progress.update(len(chunk))
 
-    tmp_path.rename(destination)
+    tmp_path.replace(destination)
     logger.info("Descarga completa: %s", destination)
+    return destination
 
 
 def _decoded_data_path() -> Path:
     """Locate the decoded DUA parquet, downloading it first if it's missing.
 
     Returns:
-        Path to data/processed/dua_<start>-<end>_decoded.parquet. If none is
-        found locally, it's downloaded first from the latest GitHub release
-        (see RELEASE_DOWNLOAD_URL).
-
-    Raises:
-        FileNotFoundError: If more than one local file matches the pattern
-            (an ambiguous case that can't be resolved automatically).
+        Path to data/processed/dua_decoded.parquet. If it isn't there, it's
+        downloaded first from the latest GitHub release.
     """
-    data_processed = utils.data_processed_dir()
-    candidates = [
-        path for path in data_processed.glob("dua_*_decoded.parquet") if DECODED_PATTERN.match(path.name)
-    ]
-    if len(candidates) > 1:
-        raise FileNotFoundError(
-            f"Expected at most one dua_<start>-<end>_decoded.parquet file in {data_processed}, "
-            f"found {candidates}."
-        )
-    if candidates:
-        return candidates[0]
-
-    destination = data_processed / DECODED_FILENAME
-    _download_decoded_data(destination)
-    return destination
+    path = utils.data_processed_dir(DECODED_FILENAME)
+    if path.exists():
+        return path
+    return download_release_asset(DECODED_FILENAME)
 
 
 def query_dua(
@@ -147,7 +135,8 @@ def query_dua(
             una lista de ellos (no distingue mayúsculas/minúsculas). `None`
             incluye los tres.
         nombre: Nombre (o parte del nombre) del importador/exportador a
-            buscar. La búsqueda no distingue mayúsculas/minúsculas. Cuanto
+            buscar. Se busca como texto literal y no distingue
+            mayúsculas/minúsculas. Cuanto
             más específico, mejor: un término corto (ej. "sa") puede
             devolver miles de coincidencias distintas.
         ncm: Código NCM o lista de códigos/prefijos a buscar. Puede incluir
@@ -167,19 +156,34 @@ def query_dua(
     filters = [pl.col("ANIO_PRESENTACION").is_in(years_list)]
 
     if tipo_regimen is not None:
-        tipo_regimen_list = [tipo_regimen] if isinstance(tipo_regimen, str) else list(tipo_regimen)
+        tipo_regimen_list = (
+            [tipo_regimen] if isinstance(tipo_regimen, str) else list(tipo_regimen)
+        )
         codes = [code.lower() for code in tipo_regimen_list]
         invalid = set(codes) - set(TIPO_REGIMEN_MAP)
         if invalid:
-            valid = ", ".join(f"{code} ({label})" for code, label in TIPO_REGIMEN_MAP.items())
-            raise ValueError(f"tipo_regimen inválido: {sorted(invalid)}. Valores válidos: {valid}.")
-        filters.append(pl.col("TIPO_REGIMEN").is_in([TIPO_REGIMEN_MAP[code] for code in codes]))
+            valid = ", ".join(
+                f"{code} ({label})" for code, label in TIPO_REGIMEN_MAP.items()
+            )
+            raise ValueError(
+                f"tipo_regimen inválido: {sorted(invalid)}. Valores válidos: {valid}."
+            )
+        filters.append(
+            pl.col("TIPO_REGIMEN").is_in([TIPO_REGIMEN_MAP[code] for code in codes])
+        )
 
     if nombre is not None:
-        filters.append(pl.col("NOMBRE_IMPORTADOR_EXPORTADOR").str.contains(f"(?i){nombre}"))
+        # Escapado para que caracteres como "." o "(" se busquen literalmente.
+        filters.append(
+            pl.col("NOMBRE_IMPORTADOR_EXPORTADOR").str.contains(
+                f"(?i){re.escape(nombre)}"
+            )
+        )
 
     if ncm is not None:
-        ncm_list = [_normalize_ncm(code) for code in ([ncm] if isinstance(ncm, str) else ncm)]
+        ncm_list = [
+            _normalize_ncm(code) for code in ([ncm] if isinstance(ncm, str) else ncm)
+        ]
         ncm_filter = pl.col("NCM").str.starts_with(ncm_list[0])
         for code in ncm_list[1:]:
             ncm_filter = ncm_filter | pl.col("NCM").str.starts_with(code)
@@ -226,7 +230,9 @@ def export_query_result(
     """
     formato = formato.lower()
     if formato not in EXPORT_FORMATS:
-        raise ValueError(f"formato inválido: {formato!r}. Valores válidos: {EXPORT_FORMATS}.")
+        raise ValueError(
+            f"formato inválido: {formato!r}. Valores válidos: {EXPORT_FORMATS}."
+        )
 
     if df_result.height == 0:
         logger.info("La consulta no devolvió filas. No se generó ningún archivo.")
@@ -234,14 +240,23 @@ def export_query_result(
 
     years_list = [query_years] if isinstance(query_years, int) else list(query_years)
     start_year, end_year = min(years_list), max(years_list)
-    year_suffix = f"{start_year}-{end_year}" if start_year != end_year else str(start_year)
+    year_suffix = (
+        f"{start_year}-{end_year}" if start_year != end_year else str(start_year)
+    )
 
     name_parts = []
     if query_tipo_regimen:
         if isinstance(query_tipo_regimen, str):
-            name_parts.append(TIPO_REGIMEN_MAP.get(query_tipo_regimen.lower(), query_tipo_regimen).lower())
+            name_parts.append(
+                TIPO_REGIMEN_MAP.get(
+                    query_tipo_regimen.lower(), query_tipo_regimen
+                ).lower()
+            )
         else:
-            labels = [TIPO_REGIMEN_MAP.get(regimen.lower(), regimen) for regimen in query_tipo_regimen]
+            labels = [
+                TIPO_REGIMEN_MAP.get(regimen.lower(), regimen)
+                for regimen in query_tipo_regimen
+            ]
             name_parts.append("-".join(label.lower() for label in labels))
     if query_nombre:
         name_parts.append(query_nombre.strip().replace(" ", "_").lower())
@@ -314,7 +329,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "Nombre (o parte del nombre) del importador/exportador a buscar "
-            "(no distingue mayúsculas/minúsculas). Cuanto más específico el "
+            "(texto literal, no distingue mayúsculas/minúsculas). Cuanto más específico el "
             'nombre, mejor: un término corto como "sa" puede devolver miles '
             "de coincidencias distintas."
         ),
@@ -384,7 +399,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("Debe indicar al menos --nombre o --ncm.")
 
     df_result = query_dua(
-        years=args.years, tipo_regimen=args.tipo_regimen, nombre=args.nombre, ncm=args.ncm
+        years=args.years,
+        tipo_regimen=args.tipo_regimen,
+        nombre=args.nombre,
+        ncm=args.ncm,
     )
     export_query_result(
         df_result,

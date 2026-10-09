@@ -133,5 +133,7 @@ cython_debug/
 config.ini
 
 # Dirs
-data/
+data/*
+# El manifest de meses procesados sí se versiona (lo actualiza el workflow).
+!data/manifest.json
 outputs/
