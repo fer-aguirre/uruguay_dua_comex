@@ -273,3 +273,7 @@ uruguay_dua_comex/
 ## Licencia
 
 Este proyecto se distribuye bajo licencia [MIT](LICENSE).
+
+---
+
+Este repositorio fue generado con [cookiecutter](https://github.com/fer-aguirre/cookiecutter-data-analysis-lite).
