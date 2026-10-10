@@ -2,646 +2,1420 @@
   "201601": {
     "size": 9693320,
     "modified": "20201203155742",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 119743,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201602": {
     "size": 9823160,
     "modified": "20201203155741",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 119561,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201603": {
     "size": 11049269,
     "modified": "20201203155740",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 135876,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201604": {
     "size": 10050508,
     "modified": "20201203155738",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 121631,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201605": {
     "size": 11095350,
     "modified": "20201203155737",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 135073,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201606": {
     "size": 10665454,
     "modified": "20201203155734",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 131081,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201607": {
     "size": 10533732,
     "modified": "20201203155733",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 130418,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201608": {
     "size": 12224962,
     "modified": "20201203155731",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 149932,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201609": {
     "size": 11993743,
     "modified": "20201203155730",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 147259,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201610": {
     "size": 12064520,
     "modified": "20201203155736",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 148516,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201611": {
     "size": 12583434,
     "modified": "20201203155727",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 156614,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201612": {
     "size": 13519966,
     "modified": "20201203155727",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 168489,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201701": {
     "size": 11326676,
     "modified": "20201124223339",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 142943,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201702": {
     "size": 9795831,
     "modified": "20201124223326",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 122908,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201703": {
     "size": 12937631,
     "modified": "20201124223342",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 158859,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201704": {
     "size": 10061598,
     "modified": "20201124223356",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 124342,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201705": {
     "size": 12351048,
     "modified": "20201124223405",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 152750,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201706": {
     "size": 11653232,
     "modified": "20201124223417",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 144339,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201707": {
     "size": 11130829,
     "modified": "20201124223424",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 136948,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201708": {
     "size": 12722292,
     "modified": "20201124223443",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 154490,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201709": {
     "size": 12398515,
     "modified": "20201124223440",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 151582,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201710": {
     "size": 12986024,
     "modified": "20201124223501",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 159341,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201711": {
     "size": 13419950,
     "modified": "20201124223506",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 165407,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201712": {
     "size": 13654089,
     "modified": "20201124223517",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 167454,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201801": {
     "size": 12070595,
     "modified": "20201124114249",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 150241,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201802": {
     "size": 10619332,
     "modified": "20201124114249",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 130566,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201803": {
     "size": 11283056,
     "modified": "20201124114252",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 139165,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201804": {
     "size": 12323113,
     "modified": "20201124114253",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 149382,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201805": {
     "size": 12191835,
     "modified": "20201124114255",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 146537,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201806": {
     "size": 11153599,
     "modified": "20201124114256",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 135541,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201807": {
     "size": 12352256,
     "modified": "20201124114258",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 149448,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201808": {
     "size": 12534963,
     "modified": "20201124114259",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 150020,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201809": {
     "size": 11259971,
     "modified": "20201124122121",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 134796,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201810": {
     "size": 13630828,
     "modified": "20201124122122",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 164276,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201811": {
     "size": 12971085,
     "modified": "20201124122125",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 157454,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201812": {
     "size": 12245278,
     "modified": "20201124122125",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 148950,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201901": {
     "size": 11693177,
     "modified": "20201121230815",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 141774,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201902": {
     "size": 10826107,
     "modified": "20201121230756",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 130977,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201903": {
     "size": 11242855,
     "modified": "20201121230814",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 133269,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201904": {
     "size": 11718391,
     "modified": "20201121231110",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 140218,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201905": {
     "size": 12573838,
     "modified": "20201122001603",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 148266,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201906": {
     "size": 10402751,
     "modified": "20201122025333",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 123489,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201907": {
     "size": 12047166,
     "modified": "20201123015736",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 143857,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201908": {
     "size": 12712289,
     "modified": "20201123015826",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 150566,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201909": {
     "size": 11772985,
     "modified": "20201123015832",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 139015,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201910": {
     "size": 13534202,
     "modified": "20201123015850",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 160739,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201911": {
     "size": 13014902,
     "modified": "20201123015855",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 154604,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "201912": {
     "size": 12977497,
     "modified": "20201123015905",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 155392,
+      "mod": 0,
+      "anu": 0
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202001": {
     "size": 9171227,
     "modified": "20220420134457",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 139928,
+      "mod": 13497,
+      "anu": 148
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202002": {
     "size": 7934181,
     "modified": "20220420134453",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 121661,
+      "mod": 10559,
+      "anu": 121
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202003": {
     "size": 8226082,
     "modified": "20220420134454",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 119090,
+      "mod": 13345,
+      "anu": 204
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202004": {
     "size": 5825599,
     "modified": "20220420134455",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 79975,
+      "mod": 9966,
+      "anu": 168
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202005": {
     "size": 6408900,
     "modified": "20220420134457",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 87911,
+      "mod": 9754,
+      "anu": 98
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202006": {
     "size": 7760909,
     "modified": "20220420134459",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 107797,
+      "mod": 10856,
+      "anu": 147
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202007": {
     "size": 8815599,
     "modified": "20220420134459",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 124118,
+      "mod": 12648,
+      "anu": 128
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202008": {
     "size": 8547874,
     "modified": "20220420134501",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 120718,
+      "mod": 13162,
+      "anu": 115
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202009": {
     "size": 9513650,
     "modified": "20220420134502",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 135175,
+      "mod": 14660,
+      "anu": 134
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202010": {
     "size": 9664198,
     "modified": "20220420134504",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 139917,
+      "mod": 13702,
+      "anu": 170
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202011": {
     "size": 9946729,
     "modified": "20220420134504",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 142686,
+      "mod": 15102,
+      "anu": 98
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202012": {
     "size": 9919349,
     "modified": "20220420134505",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 143643,
+      "mod": 16169,
+      "anu": 116
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202101": {
     "size": 8036601,
     "modified": "20220420134553",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 116524,
+      "mod": 14747,
+      "anu": 120
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202102": {
     "size": 7709932,
     "modified": "20220420134554",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 112014,
+      "mod": 13147,
+      "anu": 93
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202103": {
     "size": 9754015,
     "modified": "20220420134556",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 143748,
+      "mod": 14906,
+      "anu": 124
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202104": {
     "size": 8532529,
     "modified": "20220420134556",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 118977,
+      "mod": 13495,
+      "anu": 146
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202105": {
     "size": 9093196,
     "modified": "20220420134558",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 125152,
+      "mod": 16291,
+      "anu": 132
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202106": {
     "size": 9398411,
     "modified": "20220420134559",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 135524,
+      "mod": 17487,
+      "anu": 134
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202107": {
     "size": 9659705,
     "modified": "20220420134600",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 139006,
+      "mod": 14760,
+      "anu": 179
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202108": {
     "size": 9843570,
     "modified": "20220420134601",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 140024,
+      "mod": 16813,
+      "anu": 448
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202109": {
     "size": 10894220,
     "modified": "20220420134603",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 160527,
+      "mod": 15775,
+      "anu": 179
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202110": {
     "size": 11145138,
     "modified": "20220420134603",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 161134,
+      "mod": 16918,
+      "anu": 189
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202111": {
     "size": 12000168,
     "modified": "20220420134606",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 173500,
+      "mod": 20809,
+      "anu": 204
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202112": {
     "size": 11976789,
     "modified": "20220420134606",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 172368,
+      "mod": 18948,
+      "anu": 197
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202201": {
     "size": 9116533,
     "modified": "20220721121551",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 137804,
+      "mod": 14573,
+      "anu": 177
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202202": {
     "size": 9012188,
     "modified": "20220420135636",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 134285,
+      "mod": 15522,
+      "anu": 143
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202203": {
     "size": 11339654,
     "modified": "20220429181539",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 168192,
+      "mod": 17793,
+      "anu": 231
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202204": {
     "size": 9520290,
     "modified": "20220501074721",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 140046,
+      "mod": 16592,
+      "anu": 243
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202205": {
     "size": 10588592,
     "modified": "20220601081308",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 156452,
+      "mod": 18034,
+      "anu": 183
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202206": {
     "size": 10545935,
     "modified": "20220701073819",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 152725,
+      "mod": 20364,
+      "anu": 174
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202207": {
     "size": 10019665,
     "modified": "20220801073948",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 148976,
+      "mod": 15961,
+      "anu": 147
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202208": {
     "size": 11721904,
     "modified": "20220901060339",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 174272,
+      "mod": 18424,
+      "anu": 153
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202209": {
     "size": 11407739,
     "modified": "20221001075506",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 170721,
+      "mod": 18058,
+      "anu": 140
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202210": {
     "size": 11326855,
     "modified": "20221101074153",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 167543,
+      "mod": 17532,
+      "anu": 131
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202211": {
     "size": 11894246,
     "modified": "20221201075107",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 175121,
+      "mod": 17303,
+      "anu": 150
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202212": {
     "size": 12018314,
     "modified": "20230101102222",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 177152,
+      "mod": 19489,
+      "anu": 157
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202301": {
     "size": 10120536,
     "modified": "20230201085549",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 153428,
+      "mod": 15448,
+      "anu": 229
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202302": {
     "size": 9654269,
     "modified": "20230301083007",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 144406,
+      "mod": 15170,
+      "anu": 83
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202303": {
     "size": 11856291,
     "modified": "20230401090457",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 178234,
+      "mod": 18564,
+      "anu": 113
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202304": {
     "size": 9810980,
     "modified": "20230503145124",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 144620,
+      "mod": 16231,
+      "anu": 125
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202305": {
     "size": 11699240,
     "modified": "20230601083449",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 177696,
+      "mod": 16526,
+      "anu": 126
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202306": {
     "size": 10718719,
     "modified": "20230701083617",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 159557,
+      "mod": 17364,
+      "anu": 132
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202307": {
     "size": 10961367,
     "modified": "20230801083625",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 166667,
+      "mod": 15865,
+      "anu": 131
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202308": {
     "size": 11921824,
     "modified": "20230907155943",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 179032,
+      "mod": 17213,
+      "anu": 145
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202309": {
     "size": 11208548,
     "modified": "20231001100937",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 169686,
+      "mod": 16156,
+      "anu": 154
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202310": {
     "size": 12299889,
     "modified": "20231107184305",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 185795,
+      "mod": 16508,
+      "anu": 132
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202311": {
     "size": 12236955,
     "modified": "20231130100629",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 182690,
+      "mod": 20651,
+      "anu": 155
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202312": {
     "size": 12333951,
     "modified": "20240101102130",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 180920,
+      "mod": 21353,
+      "anu": 144
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202401": {
     "size": 11807812,
     "modified": "20240201115913",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 178521,
+      "mod": 18529,
+      "anu": 153
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202402": {
     "size": 10509428,
     "modified": "20240301091713",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 161811,
+      "mod": 14940,
+      "anu": 152
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202403": {
     "size": 11119660,
     "modified": "20240401110040",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 161815,
+      "mod": 23510,
+      "anu": 153
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202404": {
     "size": 13204608,
     "modified": "20240503200903",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 200477,
+      "mod": 20387,
+      "anu": 220
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202405": {
     "size": 12019513,
     "modified": "20240601113704",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 182595,
+      "mod": 16326,
+      "anu": 177
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202406": {
     "size": 10934631,
     "modified": "20240701102620",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 164315,
+      "mod": 19025,
+      "anu": 166
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202407": {
     "size": 12340455,
     "modified": "20240801115507",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 186343,
+      "mod": 18856,
+      "anu": 155
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202408": {
     "size": 12194958,
     "modified": "20240901115649",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 184989,
+      "mod": 16660,
+      "anu": 192
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202409": {
     "size": 12499007,
     "modified": "20241001103927",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 190354,
+      "mod": 18350,
+      "anu": 145
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202410": {
     "size": 13860783,
     "modified": "20241101113556",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 213417,
+      "mod": 18967,
+      "anu": 150
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202411": {
     "size": 13171836,
     "modified": "20241201115753",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 203085,
+      "mod": 16393,
+      "anu": 139
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202412": {
     "size": 13253488,
     "modified": "20250101115534",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 205194,
+      "mod": 18391,
+      "anu": 135
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202501": {
     "size": 12497472,
     "modified": "20250201102339",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 199008,
+      "mod": 16463,
+      "anu": 112
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202502": {
     "size": 11956817,
     "modified": "20250301101405",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 189996,
+      "mod": 15280,
+      "anu": 87
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202503": {
     "size": 12355942,
     "modified": "20250401105534",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 193800,
+      "mod": 17433,
+      "anu": 127
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202504": {
     "size": 12444495,
     "modified": "20250501101101",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 197035,
+      "mod": 16577,
+      "anu": 102
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202505": {
     "size": 13066913,
     "modified": "20250601122558",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 210016,
+      "mod": 16571,
+      "anu": 119
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202506": {
     "size": 12045999,
     "modified": "20250701102518",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 191385,
+      "mod": 16710,
+      "anu": 102
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202507": {
     "size": 13445788,
     "modified": "20250801110456",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 211466,
+      "mod": 19622,
+      "anu": 135
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202508": {
     "size": 12120035,
     "modified": "20250831113827",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 188845,
+      "mod": 17897,
+      "anu": 124
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202509": {
     "size": 14032749,
     "modified": "20251001110502",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 220568,
+      "mod": 17972,
+      "anu": 127
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202510": {
     "size": 14185571,
     "modified": "20251101113301",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 226177,
+      "mod": 17905,
+      "anu": 121
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202511": {
     "size": 13888574,
     "modified": "20251130130118",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 219383,
+      "mod": 20962,
+      "anu": 155
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202512": {
     "size": 14365427,
     "modified": "20260101112750",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 227686,
+      "mod": 20226,
+      "anu": 151
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202601": {
     "size": 12720635,
     "modified": "20260201110108",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 202496,
+      "mod": 19121,
+      "anu": 145
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202602": {
     "size": 11934116,
     "modified": "20260301093121",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 190126,
+      "mod": 18187,
+      "anu": 96
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202603": {
     "size": 13734012,
     "modified": "20260401100250",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 218266,
+      "mod": 17322,
+      "anu": 125
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202604": {
     "size": 12848508,
     "modified": "20260501091746",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 202997,
+      "mod": 16401,
+      "anu": 100
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202605": {
     "size": 11973329,
     "modified": "20260601102619",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 189772,
+      "mod": 15783,
+      "anu": 88
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202606": {
     "size": 12834229,
     "modified": "20260701104333",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 204152,
+      "mod": 17683,
+      "anu": 114
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202607": {
     "size": 13530749,
     "modified": "20260801115605",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 216981,
+      "mod": 18111,
+      "anu": 151
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202608": {
     "size": 12223664,
     "modified": "20260901103234",
-    "processed_at": "2026-09-22"
+    "rows": {
+      "ing": 190584,
+      "mod": 19723,
+      "anu": 100
+    },
+    "processed_at": "2026-09-22",
+    "previous": []
   },
   "202609": {
     "size": 13840086,
     "modified": "20261001095636",
-    "processed_at": "2026-10-09"
+    "rows": {
+      "ing": 217329,
+      "mod": 19398,
+      "anu": 138
+    },
+    "processed_at": "2026-10-09",
+    "previous": []
   }
 }

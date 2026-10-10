@@ -17,9 +17,12 @@ import json
 import logging
 import os
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
+
+import polars as pl
 
 from uruguay_dua_comex import utils
 from uruguay_dua_comex.pipeline import (
@@ -42,18 +45,99 @@ MANIFEST_PATH = utils.data_dir("manifest.json")
 
 
 @dataclass
+class RowCounts:
+    """Filas de un mes en cada uno de sus tres archivos XML.
+
+    Sirven para saber si una resubida de la DNA cambió los datos o solo
+    regeneró el archivo.
+
+    Attributes:
+        ing: Filas de ítems del archivo de ingresados (Ing).
+        mod: Filas de ítems del archivo de modificados (Mod).
+        anu: Filas del archivo de anulados (Anu).
+    """
+
+    ing: int
+    mod: int
+    anu: int
+
+    @classmethod
+    def from_parquets(cls, paths: dict[str, Path]) -> RowCounts:
+        """Count the rows of a month's converted files.
+
+        Args:
+            paths: Mapping of file kind ("ing", "mod", "anu") to its parquet,
+                from `convert_month_to_parquet`.
+
+        Returns:
+            The row count of each file.
+        """
+        return cls(
+            **{
+                kind: pl.scan_parquet(path).select(pl.len()).collect().item()
+                for kind, path in paths.items()
+            }
+        )
+
+
+@dataclass
+class PreviousVersion:
+    """Versión de un mes que la DNA reemplazó al volver a subir el archivo.
+
+    Attributes:
+        size: Tamaño del archivo mensual en el FTP, en bytes.
+        modified: Fecha de modificación en el FTP (UTC), como yyyymmddhhmmss.
+        rows: Filas de cada archivo XML de esa versión.
+        processed_at: Fecha en que se procesó esa versión (AAAA-MM-DD).
+        replaced_at: Fecha en que se reemplazó por la siguiente (AAAA-MM-DD).
+    """
+
+    size: int
+    modified: str
+    rows: RowCounts
+    processed_at: str
+    replaced_at: str
+
+
+@dataclass
 class MonthRecord:
     """Registro de un mes ya procesado, tal como se guarda en el manifest.
 
     Attributes:
         size: Tamaño del archivo mensual en el FTP, en bytes.
         modified: Fecha de modificación en el FTP (UTC), como yyyymmddhhmmss.
+        rows: Filas de cada archivo XML del mes.
         processed_at: Fecha de procesamiento, en formato ISO (AAAA-MM-DD).
+        previous: Versiones anteriores del mes, de la más vieja a la más
+            nueva; vacía si el archivo nunca cambió.
     """
 
     size: int
     modified: str
+    rows: RowCounts
     processed_at: str
+    previous: list[PreviousVersion] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> MonthRecord:
+        """Build a record from its JSON form in the manifest.
+
+        Args:
+            raw: One month's entry, as written by `save_manifest`.
+
+        Returns:
+            The record, with its nested row counts and previous versions.
+        """
+        return cls(
+            size=raw["size"],
+            modified=raw["modified"],
+            rows=RowCounts(**raw["rows"]),
+            processed_at=raw["processed_at"],
+            previous=[
+                PreviousVersion(**{**version, "rows": RowCounts(**version["rows"])})
+                for version in raw["previous"]
+            ],
+        )
 
     def matches(self, remote: RemoteMonth) -> bool:
         """Tell whether this record is the same version as the file on the server.
@@ -76,7 +160,7 @@ def load_manifest() -> dict[str, MonthRecord]:
     if not MANIFEST_PATH.exists():
         return {}
     raw = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    return {period: MonthRecord(**record) for period, record in raw.items()}
+    return {period: MonthRecord.from_dict(record) for period, record in raw.items()}
 
 
 def save_manifest(manifest: dict[str, MonthRecord]) -> None:
@@ -158,8 +242,28 @@ def update() -> list[int]:
 
     processed_at = datetime.now(URUGUAY_TZ).date().isoformat()
     for remote in changed:
-        manifest[str(remote.period)] = MonthRecord(
-            size=remote.size, modified=remote.version, processed_at=processed_at
+        period = str(remote.period)
+        previous = []
+        # A republished month keeps its replaced version, to tell later
+        # whether DNA changed the data or only regenerated the file.
+        if period in manifest:
+            old = manifest[period]
+            previous = [
+                *old.previous,
+                PreviousVersion(
+                    size=old.size,
+                    modified=old.modified,
+                    rows=old.rows,
+                    processed_at=old.processed_at,
+                    replaced_at=processed_at,
+                ),
+            ]
+        manifest[period] = MonthRecord(
+            size=remote.size,
+            modified=remote.version,
+            rows=RowCounts.from_parquets(converted[remote.period]),
+            processed_at=processed_at,
+            previous=previous,
         )
     save_manifest(manifest)
     return sorted(converted)

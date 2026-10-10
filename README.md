@@ -79,7 +79,7 @@ La DNA cierra el archivo de cada mes el último día del mes o el 1 del mes sigu
 
 1. Descarga y convierte **solo esos meses**.
 2. Reconstruye la tabla final a partir del historial (hace falta, porque las modificaciones y anulaciones de un mes pueden afectar declaraciones de meses anteriores) y publica un [release](https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest) nuevo, con la fecha de la actualización como nombre (ej. `v2026.11.02`). Se conserva solo el release más reciente.
-3. Registra los meses procesados en [`data/manifest.json`](data/manifest.json), con el tamaño y la fecha de cada archivo en el FTP y la fecha en que se procesó.
+3. Registra los meses procesados en [`data/manifest.json`](data/manifest.json), con el tamaño y la fecha de cada archivo en el FTP, la cantidad de filas de sus archivos Ing, Mod y Anu, y la fecha en que se procesó. Si la DNA vuelve a subir un mes ya procesado, la versión reemplazada queda en `previous`, con la fecha en que se reemplazó: comparando las filas se ve si cambiaron los datos o solo se regeneró el archivo.
 
 El mes en curso nunca se incluye: la DNA lo reescribe todos los días hasta que termina. Si no hay cambios, termina en un par de minutos sin publicar nada. También se puede correr a mano desde la pestaña **Actions** del repositorio (botón *Run workflow*), o en local con `uv run python -m uruguay_dua_comex.update`.
 
