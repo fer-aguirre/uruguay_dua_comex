@@ -132,6 +132,9 @@ cython_debug/
 # Secret files
 config.ini
 
+# Jupyter Notebooks
+notebooks/0.4*.ipynb
+
 # Dirs
 data/*
 # El manifest de meses procesados sí se versiona (lo actualiza el workflow).
