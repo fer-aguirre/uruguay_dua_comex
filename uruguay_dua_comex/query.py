@@ -1,7 +1,7 @@
 """Consulta y exportación de declaraciones DUA decodificadas.
 
 Funciona tanto como librería (`from uruguay_dua_comex.query import query_dua`)
-como CLI (`python -m uruguay_dua_comex.query --years 2024 --ncm 2701`). El
+como CLI (`uruguay-dua-query --years 2024 --codigo 2701`). El
 archivo exportado es CSV por defecto (`formato`/--formato/-f también acepta
 "xlsx" y "parquet") y va por defecto al directorio actual, tanto desde la
 librería como desde la CLI; usar `output_dir`/--output/-o para exportarlo a
@@ -121,7 +121,7 @@ def query_dua(
     years: int | Sequence[int],
     tipo_regimen: str | Sequence[str] | None = None,
     nombre: str | None = None,
-    ncm: str | Sequence[str] | None = None,
+    codigo: str | Sequence[str] | None = None,
 ) -> pl.DataFrame:
     """Consulta el dataset de DUA decodificado.
 
@@ -139,18 +139,18 @@ def query_dua(
             mayúsculas/minúsculas. Cuanto
             más específico, mejor: un término corto (ej. "sa") puede
             devolver miles de coincidencias distintas.
-        ncm: Código NCM o lista de códigos/prefijos a buscar. Puede incluir
+        codigo: Código NCM o lista de códigos/prefijos a buscar. Puede incluir
             puntos u otros separadores (ej. "78.01"); se ignoran.
 
     Returns:
         DataFrame de polars con las filas que cumplen los filtros.
 
     Raises:
-        ValueError: Si no se especifica ni `nombre` ni `ncm`, o si
+        ValueError: Si no se especifica ni `nombre` ni `codigo`, o si
             `tipo_regimen` incluye un código fuera de TIPO_REGIMEN_MAP.
     """
-    if nombre is None and ncm is None:
-        raise ValueError("Debe indicar al menos `nombre` o `ncm`.")
+    if nombre is None and codigo is None:
+        raise ValueError("Debe indicar al menos `nombre` o `codigo`.")
 
     years_list = [years] if isinstance(years, int) else list(years)
     filters = [pl.col("ANIO_PRESENTACION").is_in(years_list)]
@@ -180,9 +180,10 @@ def query_dua(
             )
         )
 
-    if ncm is not None:
+    if codigo is not None:
         ncm_list = [
-            _normalize_ncm(code) for code in ([ncm] if isinstance(ncm, str) else ncm)
+            _normalize_ncm(code)
+            for code in ([codigo] if isinstance(codigo, str) else codigo)
         ]
         ncm_filter = pl.col("NCM").str.starts_with(ncm_list[0])
         for code in ncm_list[1:]:
@@ -201,7 +202,7 @@ def export_query_result(
     query_years: int | Sequence[int],
     query_tipo_regimen: str | Sequence[str] | None,
     query_nombre: str | None,
-    query_ncm: str | Sequence[str] | None,
+    query_codigo: str | Sequence[str] | None,
     output_dir: Path | None = None,
     formato: str = "csv",
 ) -> Path | None:
@@ -216,7 +217,7 @@ def export_query_result(
         query_tipo_regimen: Código(s) de régimen usados en la consulta
             (i/e/t, o None).
         query_nombre: Nombre usado en la consulta (o None).
-        query_ncm: Código(s) NCM usados en la consulta (o None).
+        query_codigo: Código(s) NCM usados en la consulta (o None).
         output_dir: Carpeta donde escribir el archivo. Si es `None`, se usa
             el directorio actual. Se crea automáticamente si no existe.
         formato: Formato de exportación: "csv" (default), "xlsx" o
@@ -260,11 +261,11 @@ def export_query_result(
             name_parts.append("-".join(label.lower() for label in labels))
     if query_nombre:
         name_parts.append(query_nombre.strip().replace(" ", "_").lower())
-    if query_ncm:
-        if isinstance(query_ncm, str):
-            name_parts.append(_normalize_ncm(query_ncm))
+    if query_codigo:
+        if isinstance(query_codigo, str):
+            name_parts.append(_normalize_ncm(query_codigo))
         else:
-            name_parts.append("-".join(_normalize_ncm(code) for code in query_ncm))
+            name_parts.append("-".join(_normalize_ncm(code) for code in query_codigo))
 
     prefix = "_".join(name_parts)
     export_dir = output_dir if output_dir is not None else Path.cwd()
@@ -285,7 +286,7 @@ def export_query_result(
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    """Construye el parser de argumentos de la CLI de consulta.
+    """Construye el parser de argumentos de la CLI `uruguay-dua-query`.
 
     Returns:
         Parser de argparse configurado con las opciones de la consulta.
@@ -297,7 +298,7 @@ def _build_parser() -> argparse.ArgumentParser:
             "importador/exportador y/o código NCM, y exporta el resultado "
             "(CSV por defecto, o XLSX/Parquet con --formato) en el directorio "
             "actual, o en la carpeta indicada con --output. Debe indicarse "
-            "--nombre y/o --ncm."
+            "--nombre y/o --codigo."
         ),
     )
     parser.add_argument(
@@ -323,7 +324,7 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "-nom",
+        "-n",
         "--nombre",
         type=str,
         default=None,
@@ -335,15 +336,15 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "-n",
-        "--ncm",
+        "-c",
+        "--codigo",
         type=str,
         nargs="+",
         default=None,
         metavar="NCM",
         help=(
             "Uno o más códigos NCM (o prefijos) a buscar, separados por espacios "
-            "(ej. --ncm 73 84.20). Los puntos son opcionales (78.01 y 7801 son "
+            "(ej. --codigo 73 84.20). Los puntos son opcionales (78.01 y 7801 son "
             "equivalentes)."
         ),
     )
@@ -377,7 +378,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Punto de entrada de la CLI de consulta.
+    """Punto de entrada de la CLI `uruguay-dua-query`.
 
     Args:
         argv: Argumentos de línea de comandos a parsear. Si es `None`, se
@@ -395,21 +396,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         format="%(message)s",
     )
 
-    if args.nombre is None and args.ncm is None:
-        parser.error("Debe indicar al menos --nombre o --ncm.")
+    if args.nombre is None and args.codigo is None:
+        parser.error("Debe indicar al menos --nombre o --codigo.")
 
     df_result = query_dua(
         years=args.years,
         tipo_regimen=args.tipo_regimen,
         nombre=args.nombre,
-        ncm=args.ncm,
+        codigo=args.codigo,
     )
     export_query_result(
         df_result,
         args.years,
         args.tipo_regimen,
         args.nombre,
-        args.ncm,
+        args.codigo,
         output_dir=args.output,
         formato=args.formato,
     )

@@ -29,11 +29,11 @@ Este proyecto toma esos archivos y arma **una sola tabla limpia**:
 ## Por dónde empezar
 
 **Si querés buscar datos sin escribir código:**
-Abrí [`notebooks/0.3-query-data.ipynb`](notebooks/0.3-query-data.ipynb) en Jupyter o VS Code, cambiá los valores de la celda de configuración (años, tipo de operación, empresa, código NCM, formato) y ejecutá todas las celdas. El resultado se muestra en el notebook y se guarda en `outputs/tables/`.
+Abrí [`notebooks/0.3-query-data.ipynb`](notebooks/0.3-query-data.ipynb) en Jupyter o en tu editor de código, cambiá los valores de la celda de configuración (años, tipo de operación, empresa, código NCM, formato) y ejecutá todas las celdas. El resultado se muestra en el notebook y se guarda en `outputs/tables/`.
 
 **Si preferís la terminal:**
 ```bash
-uv run python -m uruguay_dua_comex.query --years 2024 --ncm 2701 --nombre "acme"
+uv run uruguay-dua-query --years 2024 --codigo 2701 --nombre "acme"
 ```
 Más ejemplos en [Consultar los datos](#consultar-los-datos).
 
@@ -55,7 +55,7 @@ cd uruguay_dua_comex
 uv sync
 ```
 
-`uv sync` crea una carpeta `.venv` con todo lo necesario. Todos los comandos de este README se corren desde la carpeta del proyecto.
+`uv sync` crea una carpeta `.venv` con todo lo necesario, incluido el comando `uruguay-dua-query`. Todos los comandos de este README se corren desde la carpeta del proyecto.
 
 ---
 
@@ -76,21 +76,21 @@ Si preferís armar la tabla desde cero, con los archivos originales de la DNA, s
 
 ## Consultar los datos
 
-Las consultas funcionan igual desde un notebook o desde la terminal. Hay que indicar al menos una **empresa** o un **código NCM**, para no recorrer las 20 millones de filas sin acotar.
+Las consultas funcionan igual desde un notebook o desde la terminal. Hay que indicar al menos un **nombre** de importador o exportador o un **código NCM**, para no recorrer las 20 millones de filas sin acotar.
 
 | Filtro | Qué es | Ejemplo |
 |---|---|---|
 | `years` | Año o lista de años de presentación de la declaración | `2024` / `[2023, 2024, 2025]` |
 | `tipo_regimen` *(opcional)* | Importación (`i`), exportación (`e`) o tránsito (`t`). Si no lo indicás, incluye los tres. | `"i"` / `["i", "e"]` |
 | `nombre` *(opcional)* | Nombre del importador o exportador. Busca coincidencias parciales, sin distinguir mayúsculas de minúsculas; podés escribir puntos o paréntesis tal cual (ej. `"s.a."`). Cuanto más específico, mejor: un término corto puede devolver miles de resultados. | `"acme"` |
-| `ncm` *(opcional)* | Código NCM (el código del producto en el Mercosur), completo o solo el comienzo. Los puntos son opcionales: `78.01` = `7801`. | `"2701"` |
+| `codigo` *(opcional)* | Código NCM (el código del producto en el Mercosur), completo o solo el comienzo. Los puntos son opcionales: `78.01` = `7801`. | `"2701"` |
 
 **Desde un notebook:**
 ```python
 from uruguay_dua_comex import utils
 from uruguay_dua_comex.query import export_query_result, query_dua
 
-resultado = query_dua(years=[2024, 2025], tipo_regimen="i", ncm="2701")
+resultado = query_dua(years=[2024, 2025], tipo_regimen="i", codigo="2701")
 export_query_result(
     resultado,
     [2024, 2025],
@@ -104,12 +104,14 @@ export_query_result(
 
 **Desde la terminal:**
 ```bash
-uv run python -m uruguay_dua_comex.query --years 2024 2025 -r i -n 2701 -f xlsx
-uv run python -m uruguay_dua_comex.query --years 2023 2024 --nombre "acme" -o outputs/tables
+uv run uruguay-dua-query --years 2024 2025 -r i -c 2701 -f xlsx
+uv run uruguay-dua-query --years 2023 2024 -n "acme" -o outputs/tables
 ```
 Por defecto guarda un CSV en la carpeta donde estás parado/a. Con `-o` elegís otra carpeta (se crea si no existe) y con `-f` el formato: `csv`, `xlsx` o `parquet`. Todas las opciones aparecen con `--help`.
 
 > **¿CSV o Excel?** El CSV es el formato por defecto porque no tiene límite de filas. Excel admite como máximo 1.048.576 filas por hoja, así que una búsqueda amplia (por ejemplo, un capítulo NCM entero en varios años) puede no entrar en un `.xlsx`.
+
+> **En Windows**, si `uv run uruguay-dua-query` falla con un error de que una directiva bloqueó el archivo, usá: `uv run python -m uruguay_dua_comex --years 2024 --codigo 2701`.
 
 ### Analizar la tabla completa
 
@@ -191,7 +193,7 @@ Columnas de `dua_decoded.parquet`. Las descripciones vienen de la especificació
 | FUENTE_PERIODO | número | — | Mes (AAAAMM) del archivo de donde sale la versión vigente de la declaración |
 | FUENTE_TIPO | texto | — | Archivo de donde sale esa versión: `ing` (ingresada) o `mod` (modificada) |
 
-> **Si necesitás los códigos sin traducir:** la DNA mantiene sus catálogos internamente y se le pueden pedir (info@aduanas.gub.uy). Su herramienta [Consultas DUA](https://www.aduanas.gub.uy/innovaportal/v/18714/6/innova.front/consultas-dua.html) permite filtrar por estos mismos campos, lo que sirve para verificar un código a mano.
+> **Si necesitás los códigos sin traducir:** La herramienta [Consultas DUA](https://www.aduanas.gub.uy/innovaportal/v/18714/6/innova.front/consultas-dua.html) permite filtrar por estos mismos campos, lo que sirve para verificar un código a mano.
 
 ---
 
@@ -222,7 +224,7 @@ La DNA cierra el archivo de cada mes el último día del mes o el 1 del mes sigu
 
 **Si la DNA vuelve a publicar un mes ya procesado**, la versión anterior queda anotada en el manifest, dentro de `previous`, con la fecha en que se reemplazó. Comparando la cantidad de filas de las dos versiones se puede ver si cambiaron los datos o si solo se regeneró el archivo.
 
-Si no hay nada nuevo, termina en un par de minutos sin cambiar nada. También se puede correr a mano desde la pestaña **Actions** del repositorio (botón *Run workflow*) o, en tu computadora, con `uv run python -m uruguay_dua_comex.update`.
+Si no hay nada nuevo, termina en un par de minutos sin cambiar nada. También se puede correr a mano desde la pestaña **Actions** del repositorio (botón *Run workflow*) o, en tu computadora, con `uv run uruguay-dua-update`.
 
 ---
 
@@ -234,7 +236,8 @@ uruguay_dua_comex/
 │  ├─ query.py                # Consultas y exportación (notebook y terminal)
 │  ├─ pipeline.py             # Pasos para armar la tabla
 │  ├─ update.py               # Actualización con los meses nuevos o modificados
-│  └─ utils.py                # Rutas a las carpetas del proyecto
+│  ├─ utils.py                # Rutas a las carpetas del proyecto
+│  └─ __main__.py             # Permite consultar con `python -m uruguay_dua_comex`
 │
 ├─ notebooks/                 # Los pasos del proceso, numerados
 │  ├─ 0.0-collect-data.ipynb

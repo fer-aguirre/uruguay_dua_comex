@@ -1,6 +1,6 @@
 """Actualización del dataset con los meses nuevos o modificados en el FTP de la DNA.
 
-Se corre con `python -m uruguay_dua_comex.update`, pensado para GitHub Actions
+Se corre con el comando `uruguay-dua-update`, pensado para GitHub Actions
 (ver `.github/workflows/update-data.yml`), aunque también funciona en local.
 Compara el tamaño y la fecha de cada archivo mensual cerrado del FTP con los ya
 procesados en `data/manifest.json`, y solo descarga y convierte los que
@@ -270,7 +270,7 @@ def update() -> list[int]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Punto de entrada de `python -m uruguay_dua_comex.update`.
+    """Punto de entrada de la CLI `uruguay-dua-update`.
 
     Args:
         argv: Argumentos de línea de comandos a parsear. Si es `None`, se

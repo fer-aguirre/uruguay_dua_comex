@@ -1,14 +1,22 @@
+"""Rutas a las carpetas del proyecto.
+
+Las rutas se calculan a partir de la ubicación de este archivo, no del
+directorio actual, así que funcionan igual desde cualquier carpeta (CLI,
+notebooks o GitHub Actions).
+"""
+
 from collections.abc import Callable
 from pathlib import Path
 
-from pyprojroot import here
+# Raíz del proyecto: este archivo vive en <raíz>/uruguay_dua_comex/utils.py.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def make_dir_function(*parts: str) -> Callable[..., Path]:
     """Build a function returning a path under the project root, extended by any given parts."""
 
     def dir_path(*args: str) -> Path:
-        return here().joinpath(*parts, *args)
+        return PROJECT_ROOT.joinpath(*parts, *args)
 
     return dir_path
 

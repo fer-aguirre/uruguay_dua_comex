@@ -17,17 +17,21 @@ dependencies = [
     "requests",
     "plotnine",
     "openpyxl",
-    "pyprojroot",
     "tqdm>=4.70.1",
     "xlsxwriter>=3.2.9",
 ]
+
+# Comandos de terminal que instala `uv sync`.
+[project.scripts]
+uruguay-dua-query = "uruguay_dua_comex.query:main"
+uruguay-dua-update = "uruguay_dua_comex.update:main"
 
 [build-system]
 requires = ["hatchling>=1.0.0"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-package = false
+package = true
 
 [dependency-groups]
 dev = [

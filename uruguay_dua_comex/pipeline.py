@@ -1,7 +1,7 @@
 """Pipeline de DUAs: descarga por FTP, conversión, historial, tabla final y decodificación.
 
 Lo usan tanto los notebooks `0.0`-`0.2` (para armar el dataset en local) como
-`python -m uruguay_dua_comex.update` (para incorporar los meses nuevos o
+el comando `uruguay-dua-update` (para incorporar los meses nuevos o
 modificados desde GitHub Actions).
 
 Los pasos son:

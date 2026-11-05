@@ -40,7 +40,7 @@ jobs:
 
       - name: Procesar meses nuevos o modificados
         id: update
-        run: uv run python -m uruguay_dua_comex.update
+        run: uv run uruguay-dua-update
 
       - name: Publicar release
         if: steps.update.outputs.updated == 'true'

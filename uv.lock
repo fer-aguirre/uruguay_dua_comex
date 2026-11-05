@@ -1240,18 +1240,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyprojroot"
-version = "0.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/7f/d04044efe4acc4185db1174209fadac33cc21c015ed0d6bef8884c9fa808/pyprojroot-0.3.0.tar.gz", hash = "sha256:109705bb790968704958efcfc5ccce85d8e3dafa054897cc81371fcbbf56cb10", size = 6287, upload-time = "2023-03-13T05:39:30.318Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/9b/eef01392be945c0fe86a8d084ba9188b1e2b22af037d7109b9f40a962cd0/pyprojroot-0.3.0-py3-none-any.whl", hash = "sha256:c426b51b17ab4f4d4f95b479cf5b6c22df59bb58fbd4f01b37a6977d29b99888", size = 7558, upload-time = "2023-03-13T05:39:28.707Z" },
-]
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -1635,7 +1623,7 @@ wheels = [
 [[package]]
 name = "uruguay-dua-comex"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "ipykernel" },
     { name = "nbformat" },
@@ -1644,7 +1632,6 @@ dependencies = [
     { name = "pandas" },
     { name = "plotnine" },
     { name = "polars" },
-    { name = "pyprojroot" },
     { name = "requests" },
     { name = "tqdm" },
     { name = "xlsxwriter" },
@@ -1667,7 +1654,6 @@ requires-dist = [
     { name = "pandas" },
     { name = "plotnine" },
     { name = "polars" },
-    { name = "pyprojroot" },
     { name = "requests" },
     { name = "tqdm", specifier = ">=4.70.1" },
     { name = "xlsxwriter", specifier = ">=3.2.9" },
