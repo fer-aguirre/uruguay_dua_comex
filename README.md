@@ -55,7 +55,7 @@ cd uruguay_dua_comex
 uv sync
 ```
 
-`uv sync` crea una carpeta `.venv` con todo lo necesario, incluido el comando `uruguay-dua-query`. Todos los comandos de este README se corren desde la carpeta del proyecto.
+`uv sync` crea una carpeta `.venv` con todo lo necesario, incluidos los comandos `uruguay-dua-query` (consultas) y `uruguay-dua-sync` (actualizar tus datos). Todos los comandos de este README se corren desde la carpeta del proyecto.
 
 ---
 
@@ -68,9 +68,25 @@ La tabla final es un único archivo, `dua_decoded.parquet` (~710 MB). Parquet es
 - `dua_anulados.parquet`: la lista de declaraciones anuladas (año, número y mes de la anulación).
 - `dua_historial.parquet` (~740 MB): todas las versiones de cada declaración, tal como aparecieron en cada archivo mensual. Sirve para ver qué cambió en una declaración modificada.
 
-> **Para tener los meses más recientes:** tu copia local no se actualiza sola. Borrá `data/processed/dua_decoded.parquet` y volvé a correr una consulta: se descarga la versión más nueva. Hasta qué mes llega cada versión figura en las notas del [release más reciente](https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest) y en [`data/manifest.json`](data/manifest.json).
-
 Si preferís armar la tabla desde cero, con los archivos originales de la DNA, seguí los pasos de [Cómo se arma la tabla](#cómo-se-arma-la-tabla).
+
+### Actualizar tus datos
+
+Los datos en GitHub se actualizan solos todos los meses, pero tu copia no. Para ponerla al día, corré estos dos comandos desde la carpeta del proyecto:
+
+```bash
+git pull
+uv run uruguay-dua-sync
+```
+
+- `git pull` trae los últimos cambios del proyecto.
+- `uruguay-dua-sync` compara tus archivos de `data/processed/` con los de GitHub y descarga solo los que estén viejos. Si ya están al día, no descarga nada. También actualiza `dua_anulados.parquet` y `dua_historial.parquet` si los tenés.
+
+Si un archivo tuyo es distinto y más nuevo que el de GitHub (por ejemplo, porque lo armaste vos), no lo reemplaza: te avisa y lo deja como está.
+
+En Windows, si el comando está bloqueado, usá `uv run python -m uruguay_dua_comex.sync`.
+
+Hasta qué mes llega cada versión figura en las notas del [release más reciente](https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest) y en [`data/manifest.json`](data/manifest.json).
 
 ---
 
@@ -247,6 +263,7 @@ Si no hay nada nuevo, termina en un par de minutos sin cambiar nada. También se
 uruguay_dua_comex/
 ├─ uruguay_dua_comex/         # Código del proyecto
 │  ├─ query.py                # Consultas y exportación (notebook y terminal)
+│  ├─ sync.py                 # Pone al día los datos locales con el release
 │  ├─ consulta.py             # Parámetros de la búsqueda y nombre del archivo exportado
 │  ├─ pipeline.py             # Pasos para armar la tabla
 │  ├─ update.py               # Actualización con los meses nuevos o modificados

@@ -24,6 +24,7 @@ dependencies = [
 # Comandos de terminal que instala `uv sync`.
 [project.scripts]
 uruguay-dua-query = "uruguay_dua_comex.query:main"
+uruguay-dua-sync = "uruguay_dua_comex.sync:main"
 uruguay-dua-update = "uruguay_dua_comex.update:main"
 
 [build-system]

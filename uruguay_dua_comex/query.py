@@ -60,7 +60,7 @@ def download_release_asset(filename: str) -> Path:
     """
     url = RELEASE_DOWNLOAD_URL + filename
     destination = utils.data_processed_dir(filename)
-    logger.info("%s no encontrado localmente. Descargando desde %s...", filename, url)
+    logger.info("Descargando %s desde %s...", filename, url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = destination.with_name(destination.name + ".tmp")
 
