@@ -16,8 +16,11 @@ Los pasos son:
    así que una actualización solo convierte los meses nuevos o modificados.
 4. Tabla final (`build_final_tables`): la versión más reciente de cada
    declaración, más la lista de anulados (ver notebook 0.1).
-5. Decodificación (`decode_dataset`): traduce los códigos verificados y
-   renombra las columnas (ver notebook 0.2).
+5. Decodificación (`decode_dataset`): traduce los códigos verificados,
+   renombra las columnas y agrega el nombre oficial de cada código de país,
+   aduana, vía de transporte, tipo de documento, régimen y subrégimen, a
+   partir de las tablas de codificación de la DNA (`download_catalogs`; ver
+   notebook 0.2).
 """
 
 import logging
@@ -29,6 +32,7 @@ import zipfile
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta, timezone
 from ftplib import FTP, error_perm
+from io import BytesIO
 from pathlib import Path
 
 import polars as pl
@@ -42,6 +46,16 @@ logger = logging.getLogger(__name__)
 # una carpeta por año, con archivos diarios (dd) y mensuales (dm).
 FTP_HOST = "ftp.aduanas.gub.uy"
 FTP_DUA_DIR = "/DUA Diarios XML"
+
+# Tablas de codificación de la DNA, en la carpeta "Datos Basicos" del mismo FTP.
+# El anexo de la DNA del expediente 2025-5-1-0004266
+# (docs/codificacion-campos-dua-2025.pdf) las indica como la fuente oficial de
+# cada campo codificado del DUA. Se guardan en data/raw/catalogos/.
+FTP_CATALOG_DIR = "/Datos Basicos"
+COUNTRY_CATALOG = "rgpais.zip"
+CUSTOMS_OFFICE_CATALOG = "rgaduan.zip"
+TRANSPORT_CATALOG = "dbviatr.zip"
+CATALOG_FILES = (COUNTRY_CATALOG, CUSTOMS_OFFICE_CATALOG, TRANSPORT_CATALOG)
 
 # Primer mes publicado (Ley 19.438, art. 43, de 2016).
 FIRST_PERIOD = 201601
@@ -127,33 +141,137 @@ ANU_COLUMNS = {
     "DDNUME_CORRE_PUBLICO": "DDNUME_CORRE_PUBLICO",
 }
 
-# Official code catalogs (see notebook 0.2 for the sources and for why every
-# other coded column is left as DNA's raw code instead of guessed at).
+# Official code catalogs (see notebook 0.2 for the sources and for why the
+# remaining coded columns are left as DNA's raw code instead of guessed at).
 # DDTIPO_REGI: "Tipo Régimen (Importación/Exportación)" in
 # docs/FormatoDUADiariosPublicos.htm; T (Tránsito) is the only other code.
 TIPO_REGI = {"I": "Importación", "E": "Exportación", "T": "Tránsito"}
 
-# DDTIPO_DOCUM: verbatim from DNA's "DUA de Importación" and "Instructivo de
-# llenado del DUA para Exportación" field specs.
+# Codes decoded in place, under their raw DD* name, before the rename.
+DECODED_COLUMNS = {"DDTIPO_REGI": TIPO_REGI}
+
+# The catalogs below are verbatim from DNA's annex to expediente
+# 2025-5-1-0004266 (Ministerio de Economía y Finanzas, 2025-06-26), saved as
+# docs/codificacion-campos-dua-2025.pdf. Unlike countries, customs offices and
+# transport modes, DNA doesn't publish these as files on its FTP.
+
+# DDTIPO_DOCUM ("DuaTpoDocumento" in the annex).
 TIPO_DOCUM = {
-    "2": "Cédula de identidad de la R.O.U.",
+    "2": "Cedula de identidad de Republica Oriental del Uruguay",
     "4": "R.U.T.",
-    "6": "Pasaporte, para extranjeros",
+    "6": "Pasaporte para extranjeros",
+    "7": "DOC. ESPORADICO BSE",
+    "8": "Nro. dado por la aduana",
+    "9": "N° de Identificación de Extranjeros",
 }
 
-# DDADUAINGEGR: partial -- only these three offices are named in DNA's PDFs.
-ADUANAS = {
-    "001": "Montevideo",
-    "002": "Carrasco",
-    "009": "Aceguá",
+# DDCODI_REGI ("Regimen" in the annex).
+REGIMENES = {
+    "10": "Importacion",
+    "20": "Admision temporaria con transformacion",
+    "40": "Exportacion",
+    "80": "Transito",
 }
 
-# Codes are decoded in place, under their raw DD* name, before the rename.
-DECODED_COLUMNS = {
-    "DDTIPO_REGI": TIPO_REGI,
-    "DDTIPO_DOCUM": TIPO_DOCUM,
-    "DDADUAINGEGR": ADUANAS,
+# DDTIPO_OPERA ("Tipo de Operacion" in the annex). The same code can mean
+# different things under different regimes, so the key is "<régimen>-<código>".
+SUBREGIMENES = {
+    "10-11": "Importacion Definitiva con Despacho Directo",
+    "10-12": "Importacion Definitiva con Despacho desde Deposito",
+    "10-13": "Imp.Definitiva desde Z.F. con usuario registrado en ZF",
+    "10-15": "Regularización de Importaciones por GEXP",
+    "10-16": "Regularización de Acta",
+    "10-17": "Nacionalizacion mercaderias en Admision T. para transf.",
+    "10-18": "Plusvalia",
+    "10-19": "Bienes Afectados a Infraestructura Portuaria",
+    "10-1A": "Importación de una Planta Industrial por vía Marítima",
+    "10-1B": "Importacion CABOTAJE",
+    "10-1C": "Importación Ley del Libro",
+    "10-1E": "Exploración y explotación de hidrocarburos desde buque",
+    "10-1F": "Exploración y Explotación de Hidrocarburos Terrestre",
+    "10-1G": "Admisión Temporaria MEF con garantía",
+    "10-1H": "Oper. 1H para Ley 19276 con AT MEF sin Garantía",
+    "10-1J": "Importación Organismos Exonerados",
+    "10-1K": "Oper. 1K para Ley 19276 con AT MEF con Garantía",
+    "10-1O": "Importación de combustible amparada en los arts. 320 y 321 de la Ley N° 19.924",
+    "10-1P": "Importación de Insumos con destino al proceso de prototipado",
+    "10-1Q": "Importación de Insumos con destino al proceso de prototipado con despachante",
+    "10-1R": "Importación por Retorno de mercaderías",
+    "10-1S": "Importacion Definitiva Hidrocarburos ON SHORE",
+    "10-1T": "Proceso de Importaciones con AT MEF",
+    "10-1V": "Admisión Temporaria de bienes destinados a manifestaciones deportivas, culturales, científicas",
+    "10-1W": "AT Bienes Exonerados autorizada por el Ministerio de Economía y Finanzas con solicitud de Garantías",
+    "10-1X": "AT MEF art.81 Ley 19276 sin Garantía con Autorización Previa DNA",
+    "10-1Y": "AT Bienes Exonerados autorizada por el Ministerio de Economía y Finanzas sin solicitud de Garantías",
+    "10-1Z": "Regularización Admisión Temporaria MEF",
+    "10-21": "Toma de Stock en AT",
+    "10-22": "Merc. a incl en A.T. para elab. o transf. con desp. dir",
+    "10-23": "Merc. a incl en A.T. para elab. o transf. con desp. dep",
+    "10-24": "Merc.en A.T. para elab/transf. con usuario desde Z.F.",
+    "10-25": "Merc. a incl en A.T. para reparacion con desp. directo",
+    "10-26": "Merc. a incl en A.T. para reparacion con desp. deposito",
+    "10-27": "Merc. a incl en A.T. para repar. con usuario de Z.F.",
+    "10-M1": "Importación muestras sin valor comercial",
+    "10-M2": "Importación muestras con valor comercial",
+    "10-M3": "Importación material de publicidad",
+    "10-M4": "Importación partes, repuestos y dispotivos maquinarias",
+    "10-M5": "Re-Importación de muestras.",
+    "10-M6": "Importación temporal de muestras con valor comercial.",
+    "10-M7": "Importación temporal de muestras sin valor comercial.",
+    "10-M8": "Importación temporal de material de Publicidad.",
+    "10-M9": "Regularización Importación temporal de muestras.",
+    "10-OP": "Obras Públicas contratadas, al amparo del Decreto 466/011 de 27/12/2011",
+    "10-Z1": "MERCADERIA OBJETO DEL PROCESO PRODUCTIVO A SER IMPORTADA S/ DECRETO 249/019",
+    "10-Z2": "INSUMOS Y M.PRIMA SIN LIBRE CIRCULACION S/ DECRETO 249/019",
+    "20-21": "Toma de Stock en AT",
+    "20-22": "Merc. a incl en A.T. para elab. o transf. con desp. dir",
+    "20-23": "Merc. a incl en A.T. para elab. o transf. con desp. dep",
+    "20-24": "Merc.en A.T. para elab/transf. con usuario desde Z.F.",
+    "20-25": "Merc. a incl en A.T. para reparacion con desp. directo",
+    "20-26": "Merc. a incl en A.T. para reparacion con desp. deposito",
+    "20-27": "Merc. a incl en A.T. para repar. con usuario de Z.F.",
+    "20-2K": "Importación mercadería en AT para perfeccionamiento activo, deterioro o faltantes",
+    "40-41": "Exportacion Definitiva",
+    "40-42": "Exportación a Buque Factoría",
+    "40-43": "Exporta Facil",
+    "40-46": "Reexportacion de Merc. Ing. en A.T. sin Transformacion",
+    "40-47": "Reexportacion de Mercaderia sin Transformacion",
+    "40-48": "Exportacion de Mercaderia Sujeta a Admision Temporaria",
+    "40-49": "Exportación a Facon",
+    "40-4A": "Exportaciones por Transporte Cabotaje",
+    "40-4B": "Exportaciones VAD Cabotaje",
+    "40-4M": "Expo con Múltiples Países Destino",
+    "40-4P": "Materiales Exploración y explotación hidrocarburos",
+    "40-4R": "Regularización Admisión Temporaria MEF",
+    "40-4S": "Exportación con Despacho desde Depósito",
+    "40-4T": "Exportacion para micro y pequeñas empresas",
+    "40-N1": "Exportación definitiva de Muestras sin valor comercial.",
+    "40-N2": "Exportación definitiva de Muestras con valor comercial.",
+    "40-N3": "Exportación material de publicidad.",
+    "40-N5": "Re-Exportación de Muestras.",
+    "40-N6": "Exportación temporal de muestras con valor comercial.",
+    "40-N7": "Exportación temporal de muestras sin valor comercial.",
+    "40-N8": "Exportación temporal de material de Publicidad.",
+    "80-80": "Transito",
+    "80-81": "Reembarco",
+    "80-82": "Merc. comprendida en decreto 353-96",
+    "80-83": "Idem 82 con destino DFU",
+    "80-84": "Transbordo",
+    "80-85": "Traslado Masivo de Contenedores",
+    "80-86": "Merc. con destino DFU no comprendida en decreto 353/96",
+    "80-87": "Mercaderia con destino a TLI",
+    "80-88": "Tránsito a Buque Factoría",
+    "80-89": "Regularización de Tránsitos por GEXP",
+    "80-8A": "Tránsito de Carga Consolidada",
+    "80-8B": "Tránsito con imposición de Precinto Electrónico",
+    "80-8E": "Tránsito de Operador Postal",
+    "80-8H": "Tránsito desde y hacia Salones de Pasajeros y/o Sendas",
+    "80-8Z": "Tránsito Simplificado para Zonas Francas (ex Muestras)",
 }
+
+# Suffix of the columns holding the official name of a code (see
+# `_name_lookups`), e.g. PAIS_ORIGEN_NOMBRE next to PAIS_ORIGEN.
+NAME_SUFFIX = "_NOMBRE"
 
 # Intuitive names for DNA's raw DD* tags (see notebook 0.2). DDUNID_TRANS is
 # deliberately left out: its meaning isn't documented anywhere found.
@@ -230,7 +348,43 @@ class RemoteMonth:
     @property
     def version(self) -> str:
         """Fecha de modificación como yyyymmddhhmmss, para identificar la versión."""
-        return self.modified.strftime("%Y%m%d%H%M%S")
+        return _version_tag(self.modified)
+
+
+def _version_tag(modified: datetime) -> str:
+    """Format a server modification time as yyyymmddhhmmss.
+
+    Args:
+        modified: Modification time, according to the server (UTC).
+
+    Returns:
+        The time as yyyymmddhhmmss, used to name and identify file versions.
+    """
+    return modified.strftime("%Y%m%d%H%M%S")
+
+
+def _remote_stat(ftp: FTP, path: str) -> tuple[int, datetime]:
+    """Get the size and modification time of a file on the server.
+
+    Uses SIZE and MDTM, which only need the control connection: the server
+    blocks directory listings from many networks.
+
+    Args:
+        ftp: Open connection from `connect`.
+        path: Path of the file on the server.
+
+    Returns:
+        The size in bytes and the modification time (UTC).
+
+    Raises:
+        error_perm: If the file isn't on the server.
+    """
+    size = int(ftp.sendcmd(f"SIZE {path}").split()[1])
+    # MDTM answers "213 yyyymmddhhmmss", in UTC.
+    modified = datetime.strptime(
+        ftp.sendcmd(f"MDTM {path}").split()[1][:14], "%Y%m%d%H%M%S"
+    ).replace(tzinfo=UTC)
+    return size, modified
 
 
 def connect() -> FTP:
@@ -278,7 +432,7 @@ def list_remote_months(ftp: FTP) -> list[RemoteMonth]:
     """Get the size and modification time of every finalized monthly file.
 
     The server blocks directory listings from many networks, so each file is
-    queried by name with SIZE and MDTM, which only use the control connection.
+    queried by name (see `_remote_stat`).
 
     Args:
         ftp: Open connection from `connect`.
@@ -291,11 +445,7 @@ def list_remote_months(ftp: FTP) -> list[RemoteMonth]:
     for period in _periods(FIRST_PERIOD, last_finalized_period()):
         path = _ftp_path(period)
         try:
-            size = int(ftp.sendcmd(f"SIZE {path}").split()[1])
-            # MDTM answers "213 yyyymmddhhmmss", in UTC.
-            modified = datetime.strptime(
-                ftp.sendcmd(f"MDTM {path}").split()[1][:14], "%Y%m%d%H%M%S"
-            ).replace(tzinfo=UTC)
+            size, modified = _remote_stat(ftp, path)
         except error_perm:
             logger.warning("%s no está publicado en el FTP.", path)
             continue
@@ -322,12 +472,13 @@ def local_monthly_zips() -> dict[int, Path]:
     return dict(sorted(zips.items()))
 
 
-def _is_same_version(path: Path, remote: RemoteMonth) -> bool:
-    """Tell whether a local zip is the same version as the one on the server.
+def _is_same_version(path: Path, size: int, modified: datetime) -> bool:
+    """Tell whether a local file is the same version as the one on the server.
 
     Args:
-        path: Local zip.
-        remote: Server file to compare against.
+        path: Local file.
+        size: Size of the server file, in bytes.
+        modified: Modification time of the server file (UTC).
 
     Returns:
         True if both have the same size and modification time. Times are
@@ -335,19 +486,67 @@ def _is_same_version(path: Path, remote: RemoteMonth) -> bool:
         server's time without seconds.
     """
     stat = path.stat()
-    return (
-        stat.st_size == remote.size
-        and abs(stat.st_mtime - remote.modified.timestamp()) < 60
+    return stat.st_size == size and abs(stat.st_mtime - modified.timestamp()) < 60
+
+
+def _download_versioned(
+    ftp: FTP,
+    remote_path: str,
+    size: int,
+    modified: datetime,
+    local_dir: Path,
+    existing: Path | None,
+) -> Path:
+    """Download a server file into data/raw/, unless that version is already there.
+
+    data/raw/ is never overwritten: if an older version exists, the new one is
+    saved next to it as <name>_<server timestamp>.zip. The file's modification
+    time is set to the server's, so later runs can tell whether the local copy
+    is current.
+
+    Args:
+        ftp: Open connection from `connect`.
+        remote_path: Path of the file on the server.
+        size: Size of the server file, in bytes.
+        modified: Modification time of the server file (UTC).
+        local_dir: Folder under data/raw/ to save it in.
+        existing: Newest local version of the file, or None if there's none.
+
+    Returns:
+        Path to the local file.
+    """
+    if existing is not None and _is_same_version(existing, size, modified):
+        return existing
+
+    remote_name = Path(remote_path)
+    name = (
+        remote_name.name
+        if existing is None
+        else f"{remote_name.stem}_{_version_tag(modified)}{remote_name.suffix}"
     )
+    local_path = local_dir / name
+    tmp_path = local_path.with_name(f"{name}.tmp")
+
+    logger.info("Descargando %s (%.1f MB)...", remote_path, size / 1e6)
+    local_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        with tmp_path.open("wb") as file_:
+            ftp.retrbinary(f"RETR {remote_path}", file_.write)
+        tmp_path.replace(local_path)
+    finally:
+        # Only left behind if the download failed; never leave it in data/raw/.
+        tmp_path.unlink(missing_ok=True)
+    timestamp = modified.timestamp()
+    os.utime(local_path, (timestamp, timestamp))
+    time.sleep(FTP_DELAY_SECONDS)
+    return local_path
 
 
 def download_month(ftp: FTP, remote: RemoteMonth) -> Path:
     """Download one monthly zip into data/raw/<year>/, unless it's already there.
 
-    data/raw/ is never overwritten: if an older version of the month exists,
-    the new one is saved next to it as dm<yyyymm>_<server timestamp>.zip. The
-    file's modification time is set to the server's, so later runs can tell
-    whether the local copy is current.
+    A republished month is saved next to the older version as
+    dm<yyyymm>_<server timestamp>.zip (see `_download_versioned`).
 
     Args:
         ftp: Open connection from `connect`.
@@ -356,34 +555,185 @@ def download_month(ftp: FTP, remote: RemoteMonth) -> Path:
     Returns:
         Path to the local zip.
     """
-    existing = local_monthly_zips().get(remote.period)
-    if existing is not None and _is_same_version(existing, remote):
-        return existing
-
-    year_dir = utils.data_raw_dir(str(remote.period)[:4])
-    name = (
-        f"dm{remote.period}.zip"
-        if existing is None
-        else f"dm{remote.period}_{remote.version}.zip"
+    return _download_versioned(
+        ftp,
+        _ftp_path(remote.period),
+        remote.size,
+        remote.modified,
+        utils.data_raw_dir(str(remote.period)[:4]),
+        local_monthly_zips().get(remote.period),
     )
-    zip_path = year_dir / name
-    tmp_path = zip_path.with_name(f"{name}.tmp")
 
-    logger.info(
-        "Descargando %s (%.1f MB)...", _ftp_path(remote.period), remote.size / 1e6
+
+def local_catalog(name: str) -> Path | None:
+    """Find the newest local version of one of DNA's code tables.
+
+    Args:
+        name: File name on the server, one of CATALOG_FILES.
+
+    Returns:
+        The newest file in data/raw/catalogos/ (by modification time, which is
+        set to the server's), or None if it was never downloaded.
+    """
+    stem = Path(name).stem
+    pattern = re.compile(rf"^{re.escape(stem)}(?:_\d{{14}})?\.zip$", re.IGNORECASE)
+    versions = [
+        path
+        for path in utils.data_raw_dir("catalogos").glob("*.zip")
+        if pattern.match(path.name)
+    ]
+    return max(versions, key=lambda path: path.stat().st_mtime, default=None)
+
+
+def download_catalogs(ftp: FTP) -> dict[str, Path]:
+    """Download DNA's country, customs office and transport code tables.
+
+    They're small, so they're checked on every run: a new version is saved
+    next to the old one in data/raw/catalogos/ (see `_download_versioned`).
+
+    Args:
+        ftp: Open connection from `connect`.
+
+    Returns:
+        Mapping of server file name (CATALOG_FILES) to its newest local copy.
+    """
+    paths = {}
+    for name in CATALOG_FILES:
+        remote_path = f"{FTP_CATALOG_DIR}/{name}"
+        size, modified = _remote_stat(ftp, remote_path)
+        paths[name] = _download_versioned(
+            ftp,
+            remote_path,
+            size,
+            modified,
+            utils.data_raw_dir("catalogos"),
+            local_catalog(name),
+        )
+    return paths
+
+
+@dataclass
+class Catalogs:
+    """Tablas de codificación de la DNA, como código -> nombre oficial.
+
+    Attributes:
+        countries: Países y zonas francas (rgpais), con el nombre vigente.
+        customs_offices: Aduanas (rgaduan), con el código en tres dígitos.
+        transport_modes: Vías de transporte (dbviatr).
+    """
+
+    countries: dict[str, str]
+    customs_offices: dict[str, str]
+    transport_modes: dict[str, str]
+
+
+def _catalog_bytes(path: Path) -> bytes:
+    """Read the only file inside one of DNA's catalog zips.
+
+    Args:
+        path: Local catalog zip.
+
+    Returns:
+        The contents of the file inside it.
+    """
+    with zipfile.ZipFile(path) as zf:
+        return zf.read(zf.namelist()[0])
+
+
+def _clean_name(name: str) -> str:
+    """Collapse the padding spaces DNA leaves inside and around its names.
+
+    Args:
+        name: Name as written in DNA's catalog.
+
+    Returns:
+        The same text, with single spaces.
+    """
+    return " ".join(name.split())
+
+
+def _read_countries(path: Path) -> dict[str, str]:
+    """Read DNA's country table (rgpais), keeping each code's current name.
+
+    A code renamed by DNA has one row per name, each with its start date
+    (RGPAISFCIN); the latest one wins, even if the code is no longer in use.
+
+    Args:
+        path: Local copy of rgpais.zip.
+
+    Returns:
+        Mapping of three-digit country code to its current name.
+    """
+    root = ET.fromstring(_catalog_bytes(path))
+    latest: dict[str, tuple[str, str]] = {}
+    for row in root.iter("ROW"):
+        code = row.findtext("RGPAIS")
+        name = row.findtext("RGPAISDSC")
+        start = row.findtext("RGPAISFCIN") or ""
+        if code is None or name is None:
+            continue
+        if code not in latest or start > latest[code][0]:
+            latest[code] = (start, _clean_name(name))
+    return {code: name for code, (_, name) in latest.items()}
+
+
+def _read_customs_offices(path: Path) -> dict[str, str]:
+    """Read DNA's customs office table (rgaduan).
+
+    Despite its .xml name, the file inside the zip is an Excel workbook.
+
+    Args:
+        path: Local copy of rgaduan.zip.
+
+    Returns:
+        Mapping of three-digit office code (as in the DUA files) to its name.
+    """
+    df_offices = pl.read_excel(BytesIO(_catalog_bytes(path)), engine="openpyxl")
+    return {
+        f"{int(code):03d}": _clean_name(name)
+        for code, name in df_offices.select("CODI_ADUAN", "RGADDSC").iter_rows()
+    }
+
+
+def _read_transport_modes(path: Path) -> dict[str, str]:
+    """Read DNA's transport mode table (dbviatr).
+
+    Args:
+        path: Local copy of dbviatr.zip.
+
+    Returns:
+        Mapping of transport code to its name.
+    """
+    root = ET.fromstring(_catalog_bytes(path))
+    modes = {}
+    for row in root.findall(".//{*}ROW_DBVIATR"):
+        code = row.findtext("{*}DBViaTrId")
+        name = row.findtext("{*}DBViaTrDsc")
+        if code is not None and name is not None:
+            modes[code] = _clean_name(name)
+    return modes
+
+
+def load_catalogs() -> Catalogs:
+    """Read the newest local copy of DNA's code tables, downloading any missing.
+
+    Returns:
+        The country, customs office and transport mode catalogs.
+    """
+    local_paths = {name: local_catalog(name) for name in CATALOG_FILES}
+    if all(path is not None for path in local_paths.values()):
+        paths = {name: path for name, path in local_paths.items() if path is not None}
+    else:
+        ftp = connect()
+        paths = download_catalogs(ftp)
+        ftp.quit()
+    for name, path in paths.items():
+        logger.info("Catálogo %s: %s", name, path)
+    return Catalogs(
+        countries=_read_countries(paths[COUNTRY_CATALOG]),
+        customs_offices=_read_customs_offices(paths[CUSTOMS_OFFICE_CATALOG]),
+        transport_modes=_read_transport_modes(paths[TRANSPORT_CATALOG]),
     )
-    year_dir.mkdir(parents=True, exist_ok=True)
-    try:
-        with tmp_path.open("wb") as file_:
-            ftp.retrbinary(f"RETR {_ftp_path(remote.period)}", file_.write)
-        tmp_path.replace(zip_path)
-    finally:
-        # Only left behind if the download failed; never leave it in data/raw/.
-        tmp_path.unlink(missing_ok=True)
-    timestamp = remote.modified.timestamp()
-    os.utime(zip_path, (timestamp, timestamp))
-    time.sleep(FTP_DELAY_SECONDS)
-    return zip_path
 
 
 def _read_xml_rows(
@@ -642,33 +992,79 @@ def build_final_tables() -> None:
     )
 
 
+def _name_lookups(catalogs: Catalogs) -> dict[str, tuple[pl.Expr, dict[str, str]]]:
+    """Pair each code column (after the rename) with its lookup key and catalog.
+
+    Args:
+        catalogs: DNA's FTP code tables, from `load_catalogs`.
+
+    Returns:
+        Mapping of code column to the expression to look up and the catalog
+        that resolves it. Each one gets a <column>_NOMBRE column.
+    """
+    return {
+        "PAIS_ORIGEN": (pl.col("PAIS_ORIGEN"), catalogs.countries),
+        "PAIS_PROCEDENCIA_DESTINO": (
+            pl.col("PAIS_PROCEDENCIA_DESTINO"),
+            catalogs.countries,
+        ),
+        "VIA_TRANSPORTE": (pl.col("VIA_TRANSPORTE"), catalogs.transport_modes),
+        "ADUANA_INGRESO_EGRESO": (
+            pl.col("ADUANA_INGRESO_EGRESO"),
+            catalogs.customs_offices,
+        ),
+        "TIPO_DOCUMENTO_IMPOEXPO": (pl.col("TIPO_DOCUMENTO_IMPOEXPO"), TIPO_DOCUM),
+        "REGIMEN_ADUANERO": (pl.col("REGIMEN_ADUANERO"), REGIMENES),
+        # A subregime code only has a meaning within its regime.
+        "SUBREGIMEN": (
+            pl.concat_str("REGIMEN_ADUANERO", "SUBREGIMEN", separator="-"),
+            SUBREGIMENES,
+        ),
+    }
+
+
 def decode_dataset() -> None:
-    """Decode the verified codes and rename the columns of the final table.
+    """Decode the verified codes, rename the columns and add the official names.
 
     Reads data/processed/dua.parquet and writes data/processed/dua_decoded.parquet.
-    A code with no catalog match passes through unchanged rather than becoming
-    a wrong description or null. See notebook 0.2.
+    TIPO_REGIMEN is decoded in place. The code columns in `_name_lookups` keep
+    DNA's code and get a <column>_NOMBRE column right after it, from DNA's
+    official catalogs; a code with no match gets a null name rather than a
+    guessed one. Logs how many rows have a code with no match. See notebook 0.2.
     """
+    catalogs = load_catalogs()
+    lookups = _name_lookups(catalogs)
     lf = pl.scan_parquet(utils.data_processed_dir(ITEMS_FILENAME))
 
-    # Coverage has to be measured against the raw codes before overwriting
-    # them: once decoded in place, an unmatched raw code looks the same as
-    # before. A null code counts as undecoded too.
+    for column, catalog in DECODED_COLUMNS.items():
+        lf = lf.with_columns(pl.col(column).replace(catalog))
+    lf = lf.rename(RENAME_COLUMNS).with_columns(
+        key.replace_strict(catalog, default=None, return_dtype=pl.String).alias(
+            f"{column}{NAME_SUFFIX}"
+        )
+        for column, (key, catalog) in lookups.items()
+    )
+
+    # Each name goes right after its code.
+    order = []
+    for column in lf.collect_schema().names():
+        if column.endswith(NAME_SUFFIX):
+            continue
+        order.append(column)
+        if column in lookups:
+            order.append(f"{column}{NAME_SUFFIX}")
+    lf = lf.select(order)
+
     df_coverage = lf.select(
         [
-            (~pl.col(column).is_in(list(catalog)))
-            .fill_null(True)
+            (pl.col(column).is_not_null() & pl.col(f"{column}{NAME_SUFFIX}").is_null())
             .sum()
-            .alias(f"{column}_sin_decodificar")
-            for column, catalog in DECODED_COLUMNS.items()
+            .alias(f"{column}_sin_nombre")
+            for column in lookups
         ]
         + [pl.len().alias("total_filas")]
     ).collect()
     logger.info(df_coverage)
-
-    for column, catalog in DECODED_COLUMNS.items():
-        lf = lf.with_columns(pl.col(column).replace(catalog))
-    lf = lf.rename(RENAME_COLUMNS)
 
     decoded_path = utils.data_processed_dir(DECODED_FILENAME)
     logger.info("Escribiendo %s...", decoded_path)

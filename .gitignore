@@ -133,7 +133,7 @@ cython_debug/
 config.ini
 
 # Jupyter Notebooks
-notebooks/0.4*.ipynb
+notebooks/0.5*.ipynb
 
 # Dirs
 data/*

@@ -1,13 +1,18 @@
 """Consulta y exportación de declaraciones DUA decodificadas.
 
-Funciona tanto como librería (`from uruguay_dua_comex.query import query_dua`)
-como CLI (`uruguay-dua-query --years 2024 --codigo 2701`). El
-archivo exportado es CSV por defecto (`formato`/--formato/-f también acepta
-"xlsx" y "parquet") y va por defecto al directorio actual, tanto desde la
-librería como desde la CLI; usar `output_dir`/--output/-o para exportarlo a
-otra carpeta (que se crea si no existe). Los notebooks pasan explícitamente
-`output_dir=utils.outputs_tables_dir()` para que sus exports sigan yendo a
-`outputs/tables/`.
+Funciona tanto como librería como CLI (`uruguay-dua-query`):
+
+    from uruguay_dua_comex import Consulta, export_query_result, query_data
+
+    consulta = Consulta(years=[2024, 2025], tipo_regimen="i", codigo="2701")
+    df_result = query_data(consulta)
+    export_query_result(df_result, consulta)
+
+El archivo exportado es CSV por defecto (`formato`/--formato/-f también acepta
+"xlsx" y "parquet") y va por defecto al directorio actual; usar
+`output_dir`/--output/-o para exportarlo a otra carpeta (que se crea si no
+existe). Los notebooks pasan `output_dir=utils.outputs_tables_dir()`. El
+nombre del archivo lo arma `Consulta.export_filename` (ver `consulta.py`).
 
 Si el dataset decodificado no existe en `data/processed/`, se descarga
 automáticamente desde el release más reciente del repositorio en GitHub.
@@ -24,6 +29,7 @@ import requests
 from tqdm.auto import tqdm
 
 from uruguay_dua_comex import utils
+from uruguay_dua_comex.consulta import TIPO_REGIMEN_MAP, Consulta
 
 logger = logging.getLogger(__name__)
 
@@ -35,36 +41,8 @@ RELEASE_DOWNLOAD_URL = (
     "https://github.com/fer-aguirre/uruguay_dua_comex/releases/latest/download/"
 )
 
-# Códigos cortos aceptados para tipo_regimen, mapeados al valor decodificado
-# tal como aparece en la columna TIPO_REGIMEN (ver 0.2-decode-data.ipynb).
-TIPO_REGIMEN_MAP = {
-    "i": "Importación",
-    "e": "Exportación",
-    "t": "Tránsito",
-}
-
 # Formatos de archivo aceptados para exportar el resultado de una consulta.
 EXPORT_FORMATS = ("csv", "xlsx", "parquet")
-
-# Matches any character that isn't a digit, to strip separators from an NCM code.
-NCM_NON_DIGIT_PATTERN = re.compile(r"\D+")
-
-
-def _normalize_ncm(code: str) -> str:
-    """Strip separators from an NCM code or prefix.
-
-    NCM values in the dataset are stored as plain digit strings (e.g.
-    "7801100000"), but by HS convention people commonly write them with dots
-    (e.g. "78.01" or "7801.10.00"). Stripping non-digit characters makes both
-    forms match the same rows.
-
-    Args:
-        code: NCM code or prefix, with or without separators.
-
-    Returns:
-        The code with any non-digit characters removed.
-    """
-    return NCM_NON_DIGIT_PATTERN.sub("", code)
 
 
 def download_release_asset(filename: str) -> Path:
@@ -117,76 +95,45 @@ def _decoded_data_path() -> Path:
     return download_release_asset(DECODED_FILENAME)
 
 
-def query_dua(
-    years: int | Sequence[int],
-    tipo_regimen: str | Sequence[str] | None = None,
-    nombre: str | None = None,
-    codigo: str | Sequence[str] | None = None,
-) -> pl.DataFrame:
+def query_data(consulta: Consulta) -> pl.DataFrame:
     """Consulta el dataset de DUA decodificado.
 
-    A diferencia del dataset de importaciones de ARCA Comex, este incluye
-    importaciones, exportaciones y tránsitos en la misma tabla, por lo que
-    `tipo_regimen` permite acotar a uno o más de ellos.
+    A diferencia del dataset de ARCA Comex, este incluye importaciones,
+    exportaciones y tránsitos en la misma tabla, por lo que
+    `consulta.tipo_regimen` permite acotar a uno o más de ellos.
+
+    Agrega dos columnas, igual que en argentina_afip_comex: AÑO (igual a
+    ANIO_PRESENTACION) y MES (el mes de FECHA_DUA).
 
     Args:
-        years: Año o lista de años a incluir (filtra sobre ANIO_PRESENTACION).
-        tipo_regimen: "i" (Importación), "e" (Exportación), "t" (Tránsito), o
-            una lista de ellos (no distingue mayúsculas/minúsculas). `None`
-            incluye los tres.
-        nombre: Nombre (o parte del nombre) del importador/exportador a
-            buscar. Se busca como texto literal y no distingue
-            mayúsculas/minúsculas. Cuanto
-            más específico, mejor: un término corto (ej. "sa") puede
-            devolver miles de coincidencias distintas.
-        codigo: Código NCM o lista de códigos/prefijos a buscar. Puede incluir
-            puntos u otros separadores (ej. "78.01"); se ignoran.
+        consulta: Parámetros de la búsqueda (años, régimen, nombre y/o
+            código NCM).
 
     Returns:
         DataFrame de polars con las filas que cumplen los filtros.
-
-    Raises:
-        ValueError: Si no se especifica ni `nombre` ni `codigo`, o si
-            `tipo_regimen` incluye un código fuera de TIPO_REGIMEN_MAP.
     """
-    if nombre is None and codigo is None:
-        raise ValueError("Debe indicar al menos `nombre` o `codigo`.")
+    filters = [pl.col("ANIO_PRESENTACION").is_in(consulta.year_values)]
 
-    years_list = [years] if isinstance(years, int) else list(years)
-    filters = [pl.col("ANIO_PRESENTACION").is_in(years_list)]
-
-    if tipo_regimen is not None:
-        tipo_regimen_list = (
-            [tipo_regimen] if isinstance(tipo_regimen, str) else list(tipo_regimen)
-        )
-        codes = [code.lower() for code in tipo_regimen_list]
-        invalid = set(codes) - set(TIPO_REGIMEN_MAP)
-        if invalid:
-            valid = ", ".join(
-                f"{code} ({label})" for code, label in TIPO_REGIMEN_MAP.items()
-            )
-            raise ValueError(
-                f"tipo_regimen inválido: {sorted(invalid)}. Valores válidos: {valid}."
-            )
+    if consulta.regimen_values:
         filters.append(
-            pl.col("TIPO_REGIMEN").is_in([TIPO_REGIMEN_MAP[code] for code in codes])
+            pl.col("TIPO_REGIMEN").is_in(
+                [TIPO_REGIMEN_MAP[code] for code in consulta.regimen_values]
+            )
         )
 
-    if nombre is not None:
+    if consulta.nombre_value is not None:
         # Escapado para que caracteres como "." o "(" se busquen literalmente.
         filters.append(
             pl.col("NOMBRE_IMPORTADOR_EXPORTADOR").str.contains(
-                f"(?i){re.escape(nombre)}"
+                f"(?i){re.escape(consulta.nombre_value)}"
             )
         )
 
-    if codigo is not None:
-        ncm_list = [
-            _normalize_ncm(code)
-            for code in ([codigo] if isinstance(codigo, str) else codigo)
-        ]
-        ncm_filter = pl.col("NCM").str.starts_with(ncm_list[0])
-        for code in ncm_list[1:]:
+    if consulta.codigo_values:
+        # La columna NCM ya está solo con dígitos ("7801100000").
+        codes = consulta.codigo_values
+        ncm_filter = pl.col("NCM").str.starts_with(codes[0])
+        for code in codes[1:]:
             ncm_filter = ncm_filter | pl.col("NCM").str.starts_with(code)
         filters.append(ncm_filter)
 
@@ -194,30 +141,31 @@ def query_dua(
     for extra_filter in filters[1:]:
         combined_filter = combined_filter & extra_filter
 
-    return pl.scan_parquet(_decoded_data_path()).filter(combined_filter).collect()
+    return (
+        pl.scan_parquet(_decoded_data_path())
+        .filter(combined_filter)
+        .with_columns(
+            pl.col("ANIO_PRESENTACION").cast(pl.Int64).alias("AÑO"),
+            pl.col("FECHA_DUA").dt.month().cast(pl.Int64).alias("MES"),
+        )
+        .collect()
+    )
 
 
 def export_query_result(
     df_result: pl.DataFrame,
-    query_years: int | Sequence[int],
-    query_tipo_regimen: str | Sequence[str] | None,
-    query_nombre: str | None,
-    query_codigo: str | Sequence[str] | None,
+    consulta: Consulta,
     output_dir: Path | None = None,
     formato: str = "csv",
 ) -> Path | None:
     """Exporta el resultado de una consulta a un archivo.
 
-    El nombre del archivo se genera dinámicamente a partir de los parámetros
-    de la consulta (régimen, nombre, NCM y rango de años).
+    El nombre del archivo se arma a partir de la consulta, con la fecha y
+    hora de exportación, hasta segundos (ver `Consulta.export_filename`).
 
     Args:
-        df_result: DataFrame a exportar.
-        query_years: Año o lista de años usados en la consulta.
-        query_tipo_regimen: Código(s) de régimen usados en la consulta
-            (i/e/t, o None).
-        query_nombre: Nombre usado en la consulta (o None).
-        query_codigo: Código(s) NCM usados en la consulta (o None).
+        df_result: DataFrame a exportar, resultado de `query_data(consulta)`.
+        consulta: La misma consulta usada para obtener `df_result`.
         output_dir: Carpeta donde escribir el archivo. Si es `None`, se usa
             el directorio actual. Se crea automáticamente si no existe.
         formato: Formato de exportación: "csv" (default), "xlsx" o
@@ -239,40 +187,11 @@ def export_query_result(
         logger.info("La consulta no devolvió filas. No se generó ningún archivo.")
         return None
 
-    years_list = [query_years] if isinstance(query_years, int) else list(query_years)
-    start_year, end_year = min(years_list), max(years_list)
-    year_suffix = (
-        f"{start_year}-{end_year}" if start_year != end_year else str(start_year)
-    )
-
-    name_parts = []
-    if query_tipo_regimen:
-        if isinstance(query_tipo_regimen, str):
-            name_parts.append(
-                TIPO_REGIMEN_MAP.get(
-                    query_tipo_regimen.lower(), query_tipo_regimen
-                ).lower()
-            )
-        else:
-            labels = [
-                TIPO_REGIMEN_MAP.get(regimen.lower(), regimen)
-                for regimen in query_tipo_regimen
-            ]
-            name_parts.append("-".join(label.lower() for label in labels))
-    if query_nombre:
-        name_parts.append(query_nombre.strip().replace(" ", "_").lower())
-    if query_codigo:
-        if isinstance(query_codigo, str):
-            name_parts.append(_normalize_ncm(query_codigo))
-        else:
-            name_parts.append("-".join(_normalize_ncm(code) for code in query_codigo))
-
-    prefix = "_".join(name_parts)
     export_dir = output_dir if output_dir is not None else Path.cwd()
     if not export_dir.exists():
         logger.info("El directorio de salida no existe, se crea: %s", export_dir)
         export_dir.mkdir(parents=True)
-    export_path = export_dir / f"{prefix}_{year_suffix}.{formato}"
+    export_path = export_dir / consulta.export_filename(formato)
 
     logger.info("Exportando %d filas a: %s", df_result.height, export_path)
     if formato == "csv":
@@ -386,7 +305,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     Returns:
         Código de salida del proceso: 0 si la consulta se ejecutó
-        correctamente, 1 si faltaron argumentos requeridos.
+        correctamente. Si los argumentos son inválidos, argparse termina el
+        proceso con código 2.
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -396,23 +316,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         format="%(message)s",
     )
 
-    if args.nombre is None and args.codigo is None:
-        parser.error("Debe indicar al menos --nombre o --codigo.")
+    try:
+        consulta = Consulta(
+            years=args.years,
+            tipo_regimen=args.tipo_regimen,
+            nombre=args.nombre,
+            codigo=args.codigo,
+        )
+    except ValueError as error:
+        parser.error(str(error))
 
-    df_result = query_dua(
-        years=args.years,
-        tipo_regimen=args.tipo_regimen,
-        nombre=args.nombre,
-        codigo=args.codigo,
-    )
+    df_result = query_data(consulta)
     export_query_result(
-        df_result,
-        args.years,
-        args.tipo_regimen,
-        args.nombre,
-        args.codigo,
-        output_dir=args.output,
-        formato=args.formato,
+        df_result, consulta, output_dir=args.output, formato=args.formato
     )
     return 0
 

@@ -2,13 +2,16 @@
 
 Las rutas se calculan a partir de la ubicación de este archivo, no del
 directorio actual, así que funcionan igual desde cualquier carpeta (CLI,
-notebooks o GitHub Actions).
+notebooks o GitHub Actions). Cada función recibe partes opcionales que se
+agregan al final, por ejemplo `data_processed_dir("archivo.parquet")`.
+
+Este módulo es idéntico en argentina_afip_comex y uruguay_dua_comex.
 """
 
 from collections.abc import Callable
 from pathlib import Path
 
-# Raíz del proyecto: este archivo vive en <raíz>/uruguay_dua_comex/utils.py.
+# Raíz del proyecto: este archivo vive en <raíz>/<paquete>/utils.py.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -30,3 +33,4 @@ outputs_dir = make_dir_function("outputs")
 outputs_figures_dir = make_dir_function("outputs", "figures")
 outputs_tables_dir = make_dir_function("outputs", "tables")
 assets_dir = make_dir_function("assets")
+docs_dir = make_dir_function("docs")

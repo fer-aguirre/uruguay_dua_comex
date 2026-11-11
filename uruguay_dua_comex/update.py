@@ -34,6 +34,7 @@ from uruguay_dua_comex.pipeline import (
     connect,
     convert_month_to_parquet,
     decode_dataset,
+    download_catalogs,
     download_month,
     list_remote_months,
 )
@@ -204,7 +205,8 @@ def update() -> list[int]:
 
     Changed months are downloaded and converted one at a time, replaced in the
     history (downloaded first from the latest release if it isn't local), and
-    the final and decoded tables are rebuilt from it. The manifest is saved
+    the final and decoded tables are rebuilt from it, with DNA's latest code
+    tables (`download_catalogs`). The manifest is saved
     only after every table is written.
 
     Returns:
@@ -232,6 +234,9 @@ def update() -> list[int]:
         zip_path = download_month(ftp, remote)
         logger.info("Convirtiendo %s...", _format_period(remote.period))
         converted[remote.period] = convert_month_to_parquet(remote.period, zip_path)
+    # DNA renames countries now and then, so the code tables are refreshed
+    # before every rebuild of the decoded table.
+    download_catalogs(ftp)
     ftp.quit()
 
     if not utils.data_processed_dir(HISTORY_FILENAME).exists():
